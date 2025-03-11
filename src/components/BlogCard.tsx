@@ -16,7 +16,7 @@ const BlogCard = ({ post }: BlogCardProps) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   
   // Generate a placeholder image if no image is provided
-  const imageUrl = `https://source.unsplash.com/random/600x400?blog,writing,${post.title.split(' ')[0]}`;
+  const imageUrl = `https://www.google.com/url?sa=i&url=https%3A%2F%2Fstock.adobe.com%2Fsearch%3Fk%3Dtechnology&psig=AOvVaw2nMnWYvP98DWe_PYk1R1El&ust=1741776607877000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCLCowdPtgYwDFQAAAAAdAAAAABAE,${post.title.split(' ')[0]}`;
   
   // Get the initials for avatar fallback
   const getInitials = (name: string) => {
