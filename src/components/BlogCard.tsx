@@ -7,6 +7,7 @@ import { MessageSquare } from 'lucide-react';
 import { formatDate, truncateText } from '@/lib/api';
 import type { Post } from '@/lib/types';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 interface BlogCardProps {
   post: Post;
@@ -14,6 +15,7 @@ interface BlogCardProps {
 
 const BlogCard = ({ post }: BlogCardProps) => {
   const [imageLoaded, setImageLoaded] = useState(false);
+  const navigate = useNavigate();
   
   // Generate a placeholder image if no image is provided
   const imageUrl = `https://source.unsplash.com/random/600x400?blog,writing,${post.title.split(' ')[0]}`;
@@ -26,13 +28,18 @@ const BlogCard = ({ post }: BlogCardProps) => {
       .toUpperCase();
   };
   
+  const handleCardClick = () => {
+    navigate(`/blog/${post.id}`);
+  };
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       whileHover={{ y: -8, transition: { duration: 0.3 } }}
-      className="h-full"
+      className="h-full cursor-pointer"
+      onClick={handleCardClick}
     >
       <Card className="overflow-hidden h-full flex flex-col shadow-elegant hover:shadow-elegant-hover transition-shadow duration-500 border-0">
         <div className="relative pb-[60%] overflow-hidden">
