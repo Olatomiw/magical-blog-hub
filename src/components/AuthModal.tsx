@@ -194,7 +194,7 @@ const AuthModal = ({ isOpen, onClose, initialMode, setMode }: AuthModalProps) =>
               </motion.form>
             </TabsContent>
             
-            <TabsContent value="signup" key="signup">
+            <TabsContent value="signup" key="signup" className="max-h-[60vh] overflow-y-auto pr-1">
               <motion.form 
                 onSubmit={handleSignupSubmit}
                 initial={{ opacity: 0, y: 10 }}

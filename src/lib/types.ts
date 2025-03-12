@@ -40,8 +40,11 @@ export interface User {
   lastName: string;
   username: string;
   email: string;
-  bio: string;
-  image: string;
+  bio?: string;
+  profilePicture?: string;
+  image?: string;
+  createdAt?: string;
+  role?: string;
 }
 
 export interface LoginCredentials {
@@ -64,6 +67,7 @@ export interface AuthResponse {
   message: string;
   data?: {
     token?: string;
+    userData?: User;
     user?: User;
   };
 }

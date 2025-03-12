@@ -42,15 +42,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await login(credentials);
       
-      if (response.status === 'Success' && response.data?.user && response.data?.token) {
-        setUser(response.data.user);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        localStorage.setItem('token', response.data.token);
-        toast({
-          title: "Welcome back!",
-          description: "You've successfully logged in.",
-        });
-        return true;
+      if (response.status === 'Success' && response.data) {
+        // Handle both response formats - the one with userData and the one with user
+        const userData = response.data.userData || response.data.user;
+        const token = response.data.token;
+        
+        if (userData && token) {
+          setUser(userData);
+          localStorage.setItem('user', JSON.stringify(userData));
+          localStorage.setItem('token', token);
+          toast({
+            title: "Welcome back!",
+            description: "You've successfully logged in.",
+          });
+          return true;
+        }
       }
       return false;
     } catch (error) {
@@ -66,15 +72,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await signup(credentials);
       
-      if (response.status === 'Success' && response.data?.user && response.data?.token) {
-        setUser(response.data.user);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        localStorage.setItem('token', response.data.token);
-        toast({
-          title: "Account created",
-          description: "Your account has been successfully created.",
-        });
-        return true;
+      if (response.status === 'Success' && response.data) {
+        // Handle both response formats - the one with userData and the one with user
+        const userData = response.data.userData || response.data.user;
+        const token = response.data.token;
+        
+        if (userData && token) {
+          setUser(userData);
+          localStorage.setItem('user', JSON.stringify(userData));
+          localStorage.setItem('token', token);
+          toast({
+            title: "Account created",
+            description: "Your account has been successfully created.",
+          });
+          return true;
+        }
       }
       return false;
     } catch (error) {
