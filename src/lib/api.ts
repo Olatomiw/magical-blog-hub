@@ -46,6 +46,23 @@ export async function getAllPosts(): Promise<PostsResponse> {
   return fetchWithErrorHandling<PostsResponse>(`${API_BASE_URL}/post/getAllPost`);
 }
 
+// Comments API
+export async function createComment(postId: string, text: string): Promise<any> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+  
+  return fetchWithErrorHandling<any>(`${API_BASE_URL}/comment/create/${postId}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ text }),
+  });
+}
+
 // Auth API
 export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
   return fetchWithErrorHandling<AuthResponse>(`${API_BASE_URL}/auth/login`, {

@@ -2,22 +2,28 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { getAllPosts, formatDate } from '@/lib/api';
+import { getAllPosts, formatDate, createComment } from '@/lib/api';
 import Header from '@/components/Header';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MessageCircle, ArrowLeft } from 'lucide-react';
+import { MessageCircle, ArrowLeft, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Comment, Post } from '@/lib/types';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/components/ui/use-toast';
 
 const BlogPost = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [post, setPost] = useState<Post | null>(null);
+  const [commentText, setCommentText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isAuthenticated, user } = useAuth();
   
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['posts'],
     queryFn: getAllPosts,
   });
@@ -35,6 +41,29 @@ const BlogPost = () => {
       .map(part => part.charAt(0))
       .join('')
       .toUpperCase();
+  };
+
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!id || !commentText.trim()) return;
+    
+    try {
+      setIsSubmitting(true);
+      await createComment(id, commentText.trim());
+      setCommentText('');
+      toast({
+        title: "Comment submitted",
+        description: "Your comment was posted successfully.",
+      });
+      
+      // Refetch to get the updated post with the new comment
+      await refetch();
+    } catch (error) {
+      console.error('Error submitting comment:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isLoading) {
@@ -161,6 +190,47 @@ const BlogPost = () => {
                 <MessageCircle className="mr-2" />
                 Comments ({post.comments.length})
               </h2>
+              
+              {/* Comment Form for logged-in users */}
+              {isAuthenticated ? (
+                <form onSubmit={handleCommentSubmit} className="mb-8">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="h-10 w-10 mt-1">
+                      <AvatarImage src={user?.profilePicture || `https://avatar.vercel.sh/${user?.id}`} />
+                      <AvatarFallback>{user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <Textarea 
+                        placeholder="Add a comment..." 
+                        value={commentText}
+                        onChange={(e) => setCommentText(e.target.value)}
+                        className="resize-none mb-2"
+                        required
+                      />
+                      <Button 
+                        type="submit" 
+                        size="sm"
+                        disabled={isSubmitting || !commentText.trim()}
+                        className="ml-auto"
+                      >
+                        {isSubmitting ? 'Posting...' : 'Post comment'} <Send className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </form>
+              ) : (
+                <div className="bg-muted/30 p-4 rounded-lg mb-8 text-center">
+                  <p className="text-muted-foreground">
+                    <Button 
+                      variant="link" 
+                      className="p-0 h-auto font-normal"
+                      onClick={() => document.getElementById('auth-modal-trigger')?.click()}
+                    >
+                      Sign in
+                    </Button> to add a comment
+                  </p>
+                </div>
+              )}
               
               {post.comments.length === 0 ? (
                 <div className="text-center py-8 bg-muted/30 rounded-lg">

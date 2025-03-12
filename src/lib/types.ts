@@ -34,6 +34,16 @@ export interface PostsResponse {
   data: Post[];
 }
 
+export interface CommentRequest {
+  text: string;
+}
+
+export interface CommentResponse {
+  status: string;
+  message: string;
+  data: Comment;
+}
+
 export interface User {
   id: string;
   firstName: string;
