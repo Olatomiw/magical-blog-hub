@@ -79,6 +79,5 @@ export interface AuthResponse {
   data?: {
     token?: string;
     userData?: User;
-    user?: User;
   };
 }
