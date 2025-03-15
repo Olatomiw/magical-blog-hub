@@ -55,6 +55,7 @@ export interface User {
   image?: string;
   createdAt?: string;
   role?: string;
+  postResponseList?: Post[];
 }
 
 export interface LoginCredentials {
@@ -69,7 +70,7 @@ export interface SignupCredentials {
   email: string;
   bio: string;
   password: string;
-  image: string;
+  image: File | null;
 }
 
 export interface AuthResponse {

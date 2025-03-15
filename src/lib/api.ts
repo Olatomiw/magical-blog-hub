@@ -72,10 +72,46 @@ export async function login(credentials: LoginCredentials): Promise<AuthResponse
 }
 
 export async function signup(credentials: SignupCredentials): Promise<AuthResponse> {
-  return fetchWithErrorHandling<AuthResponse>(`${API_BASE_URL}/auth/signup`, {
-    method: 'POST',
-    body: JSON.stringify(credentials),
-  });
+  const { image, ...otherCredentials } = credentials;
+  
+  // Create form data if there's an image file
+  if (image) {
+    const formData = new FormData();
+    formData.append('file', image);
+    
+    const jsonBlob = new Blob([JSON.stringify(otherCredentials)], { type: 'application/json' });
+    formData.append('userData', jsonBlob);
+    
+    // Custom fetch for form data as it needs different content type
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.message || `Request failed with status ${response.status}`;
+        throw new Error(errorMessage);
+      }
+      
+      return await response.json() as AuthResponse;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: errorMessage,
+      });
+      throw error;
+    }
+  } else {
+    // If no image, proceed with regular JSON signup
+    return fetchWithErrorHandling<AuthResponse>(`${API_BASE_URL}/auth/signup`, {
+      method: 'POST',
+      body: JSON.stringify(otherCredentials),
+    });
+  }
 }
 
 // Helper to format date

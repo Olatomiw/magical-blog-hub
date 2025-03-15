@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -8,8 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ interface AuthModalProps {
 const AuthModal = ({ isOpen, onClose, initialMode, setMode }: AuthModalProps) => {
   const { login, signup, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<string>(initialMode);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Login form state
   const [loginData, setLoginData] = useState({
@@ -37,8 +39,11 @@ const AuthModal = ({ isOpen, onClose, initialMode, setMode }: AuthModalProps) =>
     bio: '',
     password: '',
     confirmPassword: '',
-    image: '',
+    image: null as File | null,
   });
+  
+  // Preview for the uploaded image
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -50,6 +55,26 @@ const AuthModal = ({ isOpen, onClose, initialMode, setMode }: AuthModalProps) =>
   ) => {
     const { name, value } = e.target;
     setSignupData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSignupData(prev => ({ ...prev, image: file }));
+      
+      // Create a preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
   
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -104,7 +129,7 @@ const AuthModal = ({ isOpen, onClose, initialMode, setMode }: AuthModalProps) =>
       email: signupData.email,
       bio: signupData.bio,
       password: signupData.password,
-      image: signupData.image || 'https://via.placeholder.com/150',
+      image: signupData.image,
     });
     
     if (success) {
@@ -117,8 +142,9 @@ const AuthModal = ({ isOpen, onClose, initialMode, setMode }: AuthModalProps) =>
         bio: '',
         password: '',
         confirmPassword: '',
-        image: '',
+        image: null,
       });
+      setImagePreview(null);
     }
   };
   
@@ -269,15 +295,40 @@ const AuthModal = ({ isOpen, onClose, initialMode, setMode }: AuthModalProps) =>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-image">Profile Image URL</Label>
-                  <Input
-                    id="signup-image"
-                    name="image"
-                    placeholder="https://example.com/your-image.jpg"
-                    value={signupData.image}
-                    onChange={handleSignupChange}
-                    className="ring-focus"
-                  />
+                  <Label>Profile Image</Label>
+                  <div 
+                    className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center cursor-pointer hover:bg-gray-50 transition-colors"
+                    onClick={triggerFileInput}
+                  >
+                    <input
+                      type="file"
+                      id="image-upload"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
+                    
+                    {imagePreview ? (
+                      <div className="flex flex-col items-center">
+                        <Avatar className="w-20 h-20 mb-2">
+                          <AvatarImage src={imagePreview} alt="Profile preview" />
+                          <AvatarFallback>
+                            {signupData.firstName?.charAt(0) || signupData.username?.charAt(0) || '?'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm text-muted-foreground">Click to change image</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center">
+                        <Upload className="h-10 w-10 text-gray-400 mb-2" />
+                        <span className="text-sm font-medium">Upload a profile image</span>
+                        <span className="text-xs text-muted-foreground mt-1">
+                          Click to browse files
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="space-y-2">

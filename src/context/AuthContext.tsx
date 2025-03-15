@@ -43,8 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await login(credentials);
       
       if (response.status === 'Success' && response.data) {
-        // Handle both response formats - the one with userData and the one with user
-        const userData = response.data.userData || response.data.user;
+        const userData = response.data.userData;
         const token = response.data.token;
         
         if (userData && token) {
@@ -73,8 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await signup(credentials);
       
       if (response.status === 'Success' && response.data) {
-        // Handle both response formats - the one with userData and the one with user
-        const userData = response.data.userData || response.data.user;
+        const userData = response.data.userData;
         const token = response.data.token;
         
         if (userData && token) {

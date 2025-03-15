@@ -8,10 +8,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Post } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 6;
   
   const { data, isLoading, error } = useQuery({
     queryKey: ['posts'],
@@ -33,8 +36,18 @@ const Index = () => {
         );
         setFilteredPosts(filtered);
       }
+      // Reset to first page when search changes
+      setCurrentPage(1);
     }
   }, [searchTerm, posts]);
+  
+  // Get current posts for pagination
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
   
   const container = {
     hidden: { opacity: 0 },
@@ -128,16 +141,57 @@ const Index = () => {
             </p>
           </div>
         ) : (
-          <motion.div 
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-            variants={container}
-            initial="hidden"
-            animate="show"
-          >
-            {filteredPosts.map(post => (
-              <BlogCard key={post.id} post={post} />
-            ))}
-          </motion.div>
+          <>
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+              variants={container}
+              initial="hidden"
+              animate="show"
+            >
+              {currentPosts.map(post => (
+                <BlogCard key={post.id} post={post} />
+              ))}
+            </motion.div>
+            
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-12">
+                <nav className="flex space-x-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => paginate(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3"
+                  >
+                    Previous
+                  </Button>
+                  
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                    <Button
+                      key={number}
+                      variant={currentPage === number ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => paginate(number)}
+                      className="w-8 h-8 p-0"
+                    >
+                      {number}
+                    </Button>
+                  ))}
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3"
+                  >
+                    Next
+                  </Button>
+                </nav>
+              </div>
+            )}
+          </>
         )}
         
         {/* Fallback loading state during API error */}
