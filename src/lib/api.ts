@@ -80,13 +80,15 @@ export async function signup(credentials: SignupCredentials): Promise<AuthRespon
   
   const formData = new FormData();
   
-  // Add the credentials as SignupCredentials
+  // Create a Blob with the JSON data for SignupCredentials as expected by the backend
   const signupCredentialsBlob = new Blob([JSON.stringify(otherCredentials)], { 
     type: 'application/json' 
   });
+  
+  // Add SignupCredentials part exactly as the backend expects it
   formData.append('SignupCredentials', signupCredentialsBlob);
   
-  // Add the image separately
+  // Add the image as a separate part named 'image' as expected by the backend
   formData.append('image', image);
   
   try {

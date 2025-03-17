@@ -66,6 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Handle signup - identical response format to login
   const handleSignup = async (credentials: SignupCredentials): Promise<boolean> => {
     setIsLoading(true);
     try {
@@ -81,7 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.setItem('token', token);
           toast({
             title: "Account created",
-            description: "Your account has been successfully created.",
+            description: "Your account has been successfully created and you're now logged in.",
           });
           return true;
         }
