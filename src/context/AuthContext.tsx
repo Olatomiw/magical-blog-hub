@@ -55,9 +55,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(userData);
           localStorage.setItem('user', JSON.stringify(userData));
           localStorage.setItem('token', token);
+          
+          // Ensure the toast is displayed
           toast({
             title: "Welcome back!",
             description: "You've successfully logged in.",
+            duration: 5000, // Display for 5 seconds
           });
           return true;
         }
@@ -65,6 +68,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return false;
     } catch (error) {
       console.error('Login error:', error);
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: "An error occurred during login. Please try again.",
+        duration: 5000,
+      });
       return false;
     } finally {
       setIsLoading(false);
@@ -88,9 +97,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(userData);
           localStorage.setItem('user', JSON.stringify(userData));
           localStorage.setItem('token', token);
+          
+          // Ensure the toast is displayed with longer duration
           toast({
             title: "Account created",
             description: "Your account has been successfully created and you're now logged in.",
+            duration: 5000, // Display for 5 seconds
           });
           return true;
         }
@@ -98,6 +110,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return false;
     } catch (error) {
       console.error('Signup error:', error);
+      toast({
+        variant: "destructive",
+        title: "Signup Failed",
+        description: "An error occurred during signup. Please try again.",
+        duration: 5000,
+      });
       return false;
     } finally {
       setIsLoading(false);
@@ -111,6 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     toast({
       title: "Logged out",
       description: "You've been successfully logged out.",
+      duration: 3000,
     });
   };
 

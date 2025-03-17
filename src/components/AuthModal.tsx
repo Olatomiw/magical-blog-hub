@@ -20,10 +20,11 @@ const AuthModal = ({ isOpen, onClose, initialMode, setMode }: AuthModalProps) =>
   
   // Close the modal automatically when user becomes authenticated
   useEffect(() => {
-    if (isAuthenticated && isOpen) {
+    if (isAuthenticated) {
+      console.log("User is authenticated, closing modal");
       onClose();
     }
-  }, [isAuthenticated, isOpen, onClose]);
+  }, [isAuthenticated, onClose]);
   
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -31,6 +32,7 @@ const AuthModal = ({ isOpen, onClose, initialMode, setMode }: AuthModalProps) =>
   };
   
   const handleSuccess = () => {
+    console.log("Auth success callback triggered");
     onClose();
   };
   

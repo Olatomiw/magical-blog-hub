@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -61,6 +60,7 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Signup form submitted");
     
     // Basic validation
     if (signupData.password !== signupData.confirmPassword) {
@@ -91,21 +91,32 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
     }
     
     const { confirmPassword, ...credentials } = signupData;
-    const success = await signup(credentials);
+    console.log("Submitting credentials:", credentials);
     
-    if (success) {
-      onSuccess();
-      setSignupData({
-        firstName: '',
-        lastName: '',
-        username: '',
-        email: '',
-        bio: '',
-        password: '',
-        confirmPassword: '',
-        image: null,
-      });
-      setImagePreview(null);
+    try {
+      const success = await signup(credentials);
+      console.log("Signup result:", success);
+      
+      if (success) {
+        console.log("Signup successful, calling onSuccess callback");
+        // Reset form
+        setSignupData({
+          firstName: '',
+          lastName: '',
+          username: '',
+          email: '',
+          bio: '',
+          password: '',
+          confirmPassword: '',
+          image: null,
+        });
+        setImagePreview(null);
+        
+        // Call the success callback
+        onSuccess();
+      }
+    } catch (error) {
+      console.error("Error during signup submission:", error);
     }
   };
   

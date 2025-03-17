@@ -1,11 +1,11 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import AuthModal from '@/components/AuthModal';
 import { motion } from 'framer-motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,16 @@ const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const navigate = useNavigate();
+  
+  // Add this effect to redirect to profile page after login/signup
+  useEffect(() => {
+    if (isAuthenticated && authModalOpen) {
+      setAuthModalOpen(false);
+      // Wait a moment before navigating to ensure state is updated
+      setTimeout(() => navigate('/profile'), 100);
+    }
+  }, [isAuthenticated, authModalOpen, navigate]);
   
   const openLoginModal = () => {
     setAuthMode('login');
@@ -28,6 +38,11 @@ const Header = () => {
   const openSignupModal = () => {
     setAuthMode('signup');
     setAuthModalOpen(true);
+  };
+  
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
   
   return (
@@ -80,7 +95,7 @@ const Header = () => {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout} className="cursor-pointer">
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign Out
                 </DropdownMenuItem>
