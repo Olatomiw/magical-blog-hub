@@ -26,7 +26,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     if (storedUser && storedToken) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        console.log('User restored from localStorage:', parsedUser);
       } catch (error) {
         console.error('Failed to parse stored user data');
         localStorage.removeItem('user');
@@ -40,13 +42,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const handleLogin = async (credentials: LoginCredentials): Promise<boolean> => {
     setIsLoading(true);
     try {
+      console.log('Attempting login with:', credentials.email);
       const response = await login(credentials);
+      console.log('Login response:', response);
       
       if (response.status === 'Success' && response.data) {
         const userData = response.data.userData;
         const token = response.data.token;
         
         if (userData && token) {
+          console.log('Setting user data after login:', userData);
           setUser(userData);
           localStorage.setItem('user', JSON.stringify(userData));
           localStorage.setItem('token', token);
@@ -70,13 +75,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const handleSignup = async (credentials: SignupCredentials): Promise<boolean> => {
     setIsLoading(true);
     try {
+      console.log('Attempting signup with:', credentials.email);
       const response = await signup(credentials);
+      console.log('Signup response:', response);
       
       if (response.status === 'Success' && response.data) {
         const userData = response.data.userData;
         const token = response.data.token;
         
         if (userData && token) {
+          console.log('Setting user data after signup:', userData);
           setUser(userData);
           localStorage.setItem('user', JSON.stringify(userData));
           localStorage.setItem('token', token);

@@ -65,10 +65,36 @@ export async function createComment(postId: string, text: string): Promise<any> 
 
 // Auth API
 export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
-  return fetchWithErrorHandling<AuthResponse>(`${API_BASE_URL}/auth/login`, {
-    method: 'POST',
-    body: JSON.stringify(credentials),
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.message || `Login failed with status ${response.status}`;
+      toast({
+        variant: "destructive",
+        title: "Login Error",
+        description: errorMessage,
+      });
+      throw new Error(errorMessage);
+    }
+    
+    return await response.json() as AuthResponse;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred during login';
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: errorMessage,
+    });
+    throw error;
+  }
 }
 
 export async function signup(credentials: SignupCredentials): Promise<AuthResponse> {
@@ -92,14 +118,17 @@ export async function signup(credentials: SignupCredentials): Promise<AuthRespon
   formData.append('image', image);
   
   try {
+    console.log('Sending signup request with data:', { credentials: otherCredentials });
     const response = await fetch(`${API_BASE_URL}/auth/signup`, {
       method: 'POST',
       body: formData,
     });
     
+    const responseData = await response.json();
+    console.log('Signup response:', responseData);
+    
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData.message || `Signup failed with status ${response.status}`;
+      const errorMessage = responseData.message || `Signup failed with status ${response.status}`;
       toast({
         variant: "destructive",
         title: "Signup Error",
@@ -108,7 +137,7 @@ export async function signup(credentials: SignupCredentials): Promise<AuthRespon
       throw new Error(errorMessage);
     }
     
-    return await response.json() as AuthResponse;
+    return responseData as AuthResponse;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred during signup';
     toast({

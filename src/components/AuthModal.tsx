@@ -1,10 +1,11 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnimatePresence } from 'framer-motion';
 import LoginForm from './auth/LoginForm';
 import SignupForm from './auth/SignupForm';
+import { useAuth } from '@/context/AuthContext';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -15,6 +16,14 @@ interface AuthModalProps {
 
 const AuthModal = ({ isOpen, onClose, initialMode, setMode }: AuthModalProps) => {
   const [activeTab, setActiveTab] = useState<string>(initialMode);
+  const { isAuthenticated } = useAuth();
+  
+  // Close the modal automatically when user becomes authenticated
+  useEffect(() => {
+    if (isAuthenticated && isOpen) {
+      onClose();
+    }
+  }, [isAuthenticated, isOpen, onClose]);
   
   const handleTabChange = (value: string) => {
     setActiveTab(value);
