@@ -81,6 +81,15 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
       return;
     }
     
+    if (!signupData.image) {
+      toast({
+        variant: "destructive",
+        title: "Profile Image Required",
+        description: "Please upload a profile image.",
+      });
+      return;
+    }
+    
     const { confirmPassword, ...credentials } = signupData;
     const success = await signup(credentials);
     
@@ -175,7 +184,7 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
       </div>
       
       <div className="space-y-2">
-        <Label>Profile Image</Label>
+        <Label>Profile Image <span className="text-red-500">*</span></Label>
         <div 
           className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center cursor-pointer hover:bg-gray-50 transition-colors"
           onClick={triggerFileInput}
