@@ -9,14 +9,24 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from "@/components/ui/pagination";
 
 export default function Index() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const postsPerPage = 6;
   
   const { data, isLoading, isError } = useQuery({
     queryKey: ["posts"],
@@ -33,8 +43,20 @@ export default function Index() {
     );
   });
   
+  // Calculate pagination
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  
+  // Handle page change
+  const paginate = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-secondary/30">
       <Header />
       
       <main className="flex-grow">
@@ -45,8 +67,8 @@ export default function Index() {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-              Welcome to Minimal Blog
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-primary">
+              Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">Minimal Blog</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Discover stories, thoughts, and ideas on a variety of topics.
@@ -62,9 +84,12 @@ export default function Index() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search posts..."
-              className="pl-10 shadow-md"
+              className="pl-10 shadow-elegant"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1); // Reset to first page on search
+              }}
             />
           </motion.div>
           
@@ -77,8 +102,9 @@ export default function Index() {
             >
               <Button
                 onClick={() => navigate("/create-post")}
-                className="glass-button"
+                className="glass-button bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600"
               >
+                <Sparkles className="h-4 w-4 mr-2" />
                 Create New Post
               </Button>
             </motion.div>
@@ -86,7 +112,7 @@ export default function Index() {
           
           {isLoading ? (
             <div className="flex justify-center items-center py-20">
-              <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+              <Loader2 className="h-10 w-10 animate-spin text-primary" />
             </div>
           ) : isError ? (
             <div className="text-center py-20">
@@ -95,26 +121,72 @@ export default function Index() {
               </p>
             </div>
           ) : filteredPosts.length > 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            >
-              {filteredPosts.map((post: Post) => (
-                <motion.div
-                  key={post.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.4,
-                    delay: 0.1 * filteredPosts.indexOf(post),
-                  }}
-                >
-                  <BlogCard post={post} />
-                </motion.div>
-              ))}
-            </motion.div>
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              >
+                {currentPosts.map((post: Post) => (
+                  <motion.div
+                    key={post.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.4,
+                      delay: 0.1 * currentPosts.indexOf(post),
+                    }}
+                  >
+                    <BlogCard post={post} />
+                  </motion.div>
+                ))}
+              </motion.div>
+              
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <Pagination className="mt-10">
+                  <PaginationContent>
+                    {currentPage > 1 && (
+                      <PaginationItem>
+                        <PaginationPrevious onClick={() => paginate(currentPage - 1)} />
+                      </PaginationItem>
+                    )}
+                    
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter(page => Math.abs(page - currentPage) < 3 || page === 1 || page === totalPages)
+                      .map((page, index, array) => {
+                        // Add ellipsis
+                        if (index > 0 && page - array[index - 1] > 1) {
+                          return (
+                            <PaginationItem key={`ellipsis-${page}`}>
+                              <PaginationLink className="cursor-default">...</PaginationLink>
+                            </PaginationItem>
+                          );
+                        }
+                        
+                        return (
+                          <PaginationItem key={page}>
+                            <PaginationLink
+                              isActive={page === currentPage}
+                              onClick={() => paginate(page)}
+                              className={page === currentPage ? "bg-primary text-primary-foreground" : "hover:bg-secondary"}
+                            >
+                              {page}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      })}
+                    
+                    {currentPage < totalPages && (
+                      <PaginationItem>
+                        <PaginationNext onClick={() => paginate(currentPage + 1)} />
+                      </PaginationItem>
+                    )}
+                  </PaginationContent>
+                </Pagination>
+              )}
+            </>
           ) : (
             <div className="text-center py-20">
               <p className="text-lg text-muted-foreground">

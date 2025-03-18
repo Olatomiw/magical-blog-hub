@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
     
-    --primary: 240 5.9% 10%;
+    --primary: 262 83% 58%;
     --primary-foreground: 0 0% 98%;
     
     --secondary: 240 4.8% 95.9%;
@@ -23,15 +23,15 @@
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
     
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --accent: 262 83% 58%;
+    --accent-foreground: 0 0% 98%;
     
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 240 5% 65%;
+    --ring: 262 83% 58%;
 
     --radius: 0.75rem;
   }
@@ -46,8 +46,8 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
     
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 98%;
     
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
@@ -55,7 +55,7 @@
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
     
-    --accent: 240 3.7% 15.9%;
+    --accent: 262 83% 58%;
     --accent-foreground: 0 0% 98%;
     
     --destructive: 0 62.8% 30.6%;
@@ -63,7 +63,7 @@
     
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --ring: 262 83% 58%;
   }
 }
 
@@ -78,23 +78,23 @@
   }
   
   .glass-panel {
-    @apply bg-white/70 backdrop-blur-sm dark:bg-gray-900/70 border border-gray-200/50 dark:border-gray-700/50 shadow-md;
+    @apply bg-white/80 backdrop-blur-md dark:bg-gray-900/80 border border-gray-200/70 dark:border-gray-700/50 shadow-lg;
   }
   
   .glass-button {
-    @apply bg-white/90 hover:bg-white/100 backdrop-blur-sm border border-gray-200/70 hover:border-gray-300/70 
-           dark:bg-gray-900/70 dark:hover:bg-gray-800/90 dark:border-gray-700/50 dark:hover:border-gray-600/50
-           transition-all duration-200 ease-out transform hover:scale-[1.03] active:scale-[0.97] shadow-sm hover:shadow-md;
+    @apply bg-white/90 hover:bg-white/100 backdrop-blur-sm border border-gray-200/80 hover:border-gray-300/80 
+           dark:bg-gray-900/80 dark:hover:bg-gray-800/90 dark:border-gray-700/60 dark:hover:border-gray-600/60
+           transition-all duration-200 ease-out transform hover:scale-[1.03] active:scale-[0.97] shadow-md hover:shadow-lg;
   }
 
   /* Enhanced box shadows */
   .card, .form-container, .input-container {
-    @apply shadow-md hover:shadow-lg transition-shadow duration-200;
+    @apply shadow-lg hover:shadow-xl transition-shadow duration-300;
   }
 
   /* Focus styles */
   .ring-focus {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary/50;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary/70;
   }
   
   /* Animated underline hover effect */
@@ -103,7 +103,7 @@
   }
   
   .hover-underline::after {
-    @apply content-[''] absolute bottom-0 left-0 h-[1px] w-0 bg-current transition-all duration-300;
+    @apply content-[''] absolute bottom-0 left-0 h-[2px] w-0 bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300;
   }
   
   .hover-underline:hover::after {
@@ -147,9 +147,64 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-300/50 dark:bg-gray-700/50 rounded-full;
+  @apply bg-gradient-to-b from-indigo-400/50 to-purple-400/50 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400/60 dark:bg-gray-600/60;
+  @apply bg-gradient-to-b from-indigo-500/60 to-purple-500/60;
+}
+
+/* New colorful elements */
+.shadow-elegant {
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+}
+
+.shadow-elegant-hover {
+  box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.15);
+}
+
+/* Animated gradient background */
+.animated-gradient {
+  background-size: 200% 200%;
+  animation: gradientAnimation 15s ease infinite;
+}
+
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+/* Shimmer effect */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmerEffect 2s infinite;
+}
+
+@keyframes shimmerEffect {
+  100% {
+    left: 150%;
+  }
 }
