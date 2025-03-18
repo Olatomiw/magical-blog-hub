@@ -1,211 +1,131 @@
 
-import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { getAllPosts } from '@/lib/api';
-import Header from '@/components/Header';
-import BlogCard from '@/components/BlogCard';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Post } from '@/lib/types';
-import { Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import BlogCard from "@/components/BlogCard";
+import { getAllPosts } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
+import { Post } from "@/lib/types";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { Search, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
-const Index = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const postsPerPage = 6;
+export default function Index() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['posts'],
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["posts"],
     queryFn: getAllPosts,
   });
   
   const posts = data?.data || [];
   
-  useEffect(() => {
-    if (posts.length > 0) {
-      if (searchTerm.trim() === '') {
-        setFilteredPosts(posts);
-      } else {
-        const lowerSearchTerm = searchTerm.toLowerCase();
-        const filtered = posts.filter(post => 
-          post.title.toLowerCase().includes(lowerSearchTerm) ||
-          post.content.toLowerCase().includes(lowerSearchTerm) ||
-          post.author.name.toLowerCase().includes(lowerSearchTerm)
-        );
-        setFilteredPosts(filtered);
-      }
-      // Reset to first page when search changes
-      setCurrentPage(1);
-    }
-  }, [searchTerm, posts]);
-  
-  // Get current posts for pagination
-  const indexOfLastPost = currentPage * postsPerPage;
-  const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
-  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
-  
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-  
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
+  // Filter posts based on search term
+  const filteredPosts = posts.filter((post: Post) => {
+    return (
+      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      post.content.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
   
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <motion.div 
-        className="pt-32 pb-16 px-4 md:px-6 container"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="text-center mb-16 max-w-2xl mx-auto">
-          <motion.h1 
-            className="text-4xl md:text-5xl font-bold mb-4"
+      <main className="flex-grow">
+        <div className="container px-4 md:px-6 max-w-7xl mx-auto pt-32 pb-16">
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.6 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12"
           >
-            Discover Insightful Articles
-          </motion.h1>
-          <motion.p 
-            className="text-lg text-muted-foreground"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-          >
-            Explore our collection of thought-provoking content written by experts.
-          </motion.p>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+              Welcome to Minimal Blog
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Discover stories, thoughts, and ideas on a variety of topics.
+            </p>
+          </motion.div>
           
-          <motion.div 
-            className="mt-8 relative max-w-md mx-auto"
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="relative mb-8 max-w-xl mx-auto"
           >
-            <input
-              type="text"
-              placeholder="Search articles..."
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search posts..."
+              className="pl-10 shadow-md"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full py-3 px-4 rounded-full bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none"
             />
           </motion.div>
-        </div>
-        
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="flex flex-col space-y-3">
-                <Skeleton className="h-[240px] w-full rounded-xl" />
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-8 w-full" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-5/6" />
-                </div>
-                <div className="flex items-center space-x-2 pt-4">
-                  <Skeleton className="h-8 w-8 rounded-full" />
-                  <Skeleton className="h-4 w-[100px]" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : error ? (
-          <div className="text-center py-20">
-            <p className="text-2xl font-semibold text-destructive mb-2">Unable to load blog posts</p>
-            <p className="text-muted-foreground mb-6">
-              There was an error connecting to the server. Please try again later.
-            </p>
-            <p className="text-sm text-muted-foreground bg-muted/40 p-4 rounded-md inline-block">
-              Error details: Unable to connect to http://localhost:8080/api/post/getAllPost
-            </p>
-          </div>
-        ) : filteredPosts.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-2xl font-semibold mb-2">No posts found</p>
-            <p className="text-muted-foreground">
-              {searchTerm 
-                ? `No posts matching "${searchTerm}". Try a different search term.` 
-                : "There are no blog posts available at the moment."}
-            </p>
-          </div>
-        ) : (
-          <>
-            <motion.div 
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-              variants={container}
-              initial="hidden"
-              animate="show"
+          
+          {isAuthenticated && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex justify-center mb-8"
             >
-              {currentPosts.map(post => (
-                <BlogCard key={post.id} post={post} />
+              <Button
+                onClick={() => navigate("/create-post")}
+                className="glass-button"
+              >
+                Create New Post
+              </Button>
+            </motion.div>
+          )}
+          
+          {isLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+            </div>
+          ) : isError ? (
+            <div className="text-center py-20">
+              <p className="text-lg text-red-500">
+                Error loading posts. Please try again later.
+              </p>
+            </div>
+          ) : filteredPosts.length > 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              {filteredPosts.map((post: Post) => (
+                <motion.div
+                  key={post.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.4,
+                    delay: 0.1 * filteredPosts.indexOf(post),
+                  }}
+                >
+                  <BlogCard post={post} />
+                </motion.div>
               ))}
             </motion.div>
-            
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="flex justify-center mt-12">
-                <nav className="flex space-x-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => paginate(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                    className="px-3"
-                  >
-                    Previous
-                  </Button>
-                  
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                    <Button
-                      key={number}
-                      variant={currentPage === number ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => paginate(number)}
-                      className="w-8 h-8 p-0"
-                    >
-                      {number}
-                    </Button>
-                  ))}
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                    className="px-3"
-                  >
-                    Next
-                  </Button>
-                </nav>
-              </div>
-            )}
-          </>
-        )}
-        
-        {/* Fallback loading state during API error */}
-        {!isLoading && filteredPosts.length === 0 && !searchTerm && (
-          <div className="text-center py-8">
-            <Loader2 className="animate-spin h-8 w-8 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">
-              Attempting to connect to the API...
-            </p>
-          </div>
-        )}
-      </motion.div>
+          ) : (
+            <div className="text-center py-20">
+              <p className="text-lg text-muted-foreground">
+                No posts found. Try different search terms.
+              </p>
+            </div>
+          )}
+        </div>
+      </main>
+      
+      <Footer />
     </div>
   );
-};
-
-export default Index;
+}

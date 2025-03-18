@@ -4,7 +4,8 @@ import type {
   PostsResponse, 
   AuthResponse, 
   LoginCredentials, 
-  SignupCredentials 
+  SignupCredentials,
+  Category
 } from '@/lib/types';
 
 const API_BASE_URL = 'http://localhost:8080/api';
@@ -44,6 +45,28 @@ async function fetchWithErrorHandling<T>(
 // Posts API
 export async function getAllPosts(): Promise<PostsResponse> {
   return fetchWithErrorHandling<PostsResponse>(`${API_BASE_URL}/post/getAllPost`);
+}
+
+export async function createPost(title: string, content: string, status: string, categoryIds: number[]): Promise<any> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+  
+  return fetchWithErrorHandling<any>(`${API_BASE_URL}/post/create`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ title, content, status, categoryIds }),
+  });
+}
+
+// Categories API
+export async function getAllCategories(): Promise<Category[]> {
+  return fetchWithErrorHandling<Category[]>(`${API_BASE_URL}/category/categories`);
 }
 
 // Comments API

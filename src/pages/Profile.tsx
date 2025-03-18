@@ -2,13 +2,14 @@
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatDate, truncateText } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, MessageCircle, Clock, Calendar } from 'lucide-react';
+import { User, MessageCircle, Clock, Calendar, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Navigate } from 'react-router-dom';
 
@@ -53,7 +54,7 @@ const Profile = () => {
       <Header />
       
       <motion.div 
-        className="container max-w-6xl pt-32 pb-16 px-4 md:px-6"
+        className="container max-w-6xl pt-32 pb-16 px-4 md:px-6 flex-grow"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -108,9 +109,22 @@ const Profile = () => {
         >
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-2xl font-bold">Your Posts</h2>
-            <span className="text-sm text-muted-foreground">
-              {userPosts.length} post{userPosts.length !== 1 ? 's' : ''}
-            </span>
+            <div className="flex items-center gap-2">
+              <Button 
+                size="sm"
+                variant="outline"
+                asChild
+                className="flex items-center gap-1 shadow-sm hover:shadow-md"
+              >
+                <Link to="/create-post">
+                  <Plus className="h-4 w-4" />
+                  Create Post
+                </Link>
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                {userPosts.length} post{userPosts.length !== 1 ? 's' : ''}
+              </span>
+            </div>
           </div>
           
           {userPosts.length === 0 ? (
@@ -212,6 +226,8 @@ const Profile = () => {
           )}
         </motion.div>
       </motion.div>
+      
+      <Footer />
     </div>
   );
 };

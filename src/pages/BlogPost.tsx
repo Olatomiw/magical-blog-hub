@@ -1,66 +1,97 @@
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { getAllPosts, formatDate, createComment } from "@/lib/api";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/context/AuthContext";
+import { useState } from "react";
+import { toast } from "@/components/ui/use-toast";
+import { motion } from "framer-motion";
+import { ArrowLeft, MessageSquare, Clock, User, Loader2 } from "lucide-react";
+import { Post } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
 
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { getAllPosts, formatDate, createComment } from '@/lib/api';
-import Header from '@/components/Header';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { MessageCircle, ArrowLeft, Send } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Comment, Post } from '@/lib/types';
-import { motion } from 'framer-motion';
-import { useAuth } from '@/context/AuthContext';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from '@/components/ui/use-toast';
+interface CommentItemProps {
+  comment: any;
+}
 
-const BlogPost = () => {
+const CommentItem: React.FC<CommentItemProps> = ({ comment }) => {
+  return (
+    <Card className="mb-4">
+      <CardContent className="p-4">
+        <div className="flex items-start space-x-4">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={comment.authorDTO?.image || ''} alt={comment.authorDTO?.name || 'User'} />
+            <AvatarFallback>{comment.authorDTO?.name?.charAt(0) || 'U'}</AvatarFallback>
+          </Avatar>
+          <div>
+            <div className="text-sm font-medium">{comment.authorDTO?.name}</div>
+            <div className="text-xs text-muted-foreground">
+              {formatDate(comment.createdAt)}
+            </div>
+            <p className="text-sm mt-1">{comment.text}</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default function BlogPost() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [post, setPost] = useState<Post | null>(null);
-  const [commentText, setCommentText] = useState('');
+  const { user, isAuthenticated } = useAuth();
+  const [commentText, setCommentText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { isAuthenticated, user } = useAuth();
-  
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['posts'],
+
+  const { data: postsData, isLoading, isError } = useQuery({
+    queryKey: ["posts"],
     queryFn: getAllPosts,
   });
-  
-  useEffect(() => {
-    if (data?.data) {
-      const foundPost = data.data.find(p => p.id === id);
-      setPost(foundPost || null);
-    }
-  }, [data, id]);
-  
-  // Get the initials for avatar fallback
-  const getInitials = (name: string) => {
-    return name.split(' ')
-      .map(part => part.charAt(0))
-      .join('')
-      .toUpperCase();
+
+  const post: Post | undefined = postsData?.data.find((p: Post) => p.id === id);
+
+  const handleGoBack = () => {
+    navigate("/");
   };
 
-  const handleCommentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!id || !commentText.trim()) return;
-    
-    try {
-      setIsSubmitting(true);
-      await createComment(id, commentText.trim());
-      setCommentText('');
+  const handleCommentSubmit = async () => {
+    if (!isAuthenticated) {
       toast({
-        title: "Comment submitted",
-        description: "Your comment was posted successfully.",
+        title: "Authentication Required",
+        description: "You must be logged in to post a comment.",
+        variant: "destructive",
       });
-      
-      // Refetch to get the updated post with the new comment
-      await refetch();
-    } catch (error) {
-      console.error('Error submitting comment:', error);
+      return;
+    }
+
+    if (!commentText.trim()) {
+      toast({
+        title: "Empty Comment",
+        description: "Please enter some text for your comment.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await createComment(id!, commentText);
+      setCommentText("");
+      toast({
+        title: "Comment Posted",
+        description: "Your comment has been posted successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error Posting Comment",
+        description: error.message || "Failed to post comment.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -70,209 +101,150 @@ const BlogPost = () => {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
-        <div className="pt-32 pb-16 px-4 md:px-6 container">
-          <div className="max-w-3xl mx-auto">
-            <Skeleton className="h-10 w-3/4 mb-4" />
-            <Skeleton className="h-6 w-1/4 mb-8" />
-            <Skeleton className="h-64 w-full rounded-lg mb-8" />
-            <div className="space-y-4">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
-            </div>
-          </div>
-        </div>
+        <main className="flex-grow container max-w-4xl mx-auto px-4 md:px-6 pt-32 pb-16 flex items-center justify-center">
+          <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+        </main>
+        <Footer />
       </div>
     );
   }
 
-  if (error || !post) {
+  if (isError || !post) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
-        <div className="pt-32 pb-16 px-4 md:px-6 container">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-3xl font-bold mb-4">Post Not Found</h1>
-            <p className="text-muted-foreground mb-6">
-              {error ? "There was an error loading this post." : "The post you're looking for doesn't exist."}
-            </p>
-            <Button onClick={() => navigate('/')} size="lg" className="mt-4">
-              <ArrowLeft className="mr-2" /> Back to Home
-            </Button>
+        <main className="flex-grow container max-w-4xl mx-auto px-4 md:px-6 pt-32 pb-16 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-semibold mb-4">Error</h2>
+            <p className="text-muted-foreground">Failed to load post.</p>
           </div>
-        </div>
+        </main>
+        <Footer />
       </div>
     );
   }
-
-  // Generate a placeholder image
-  const imageUrl = `https://source.unsplash.com/random/1200x600?blog,writing,${post.title.split(' ')[0]}`;
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <motion.div 
-        className="pt-32 pb-16 px-4 md:px-6 container"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="max-w-3xl mx-auto">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/')}
-            className="mb-6 pl-0 hover:pl-1 transition-all duration-300"
-          >
-            <ArrowLeft className="mr-2" /> Back to all posts
+      <main className="flex-grow container max-w-4xl mx-auto px-4 md:px-6 pt-32 pb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Button variant="ghost" onClick={handleGoBack} className="mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Home
           </Button>
           
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.5 }}
-          >
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">{post.title}</h1>
-            
-            <div className="flex items-center space-x-4 mb-6">
-              <div className="flex items-center">
-                <Avatar className="h-10 w-10 mr-3">
-                  <AvatarImage src={`https://avatar.vercel.sh/${post.author.id}`} />
-                  <AvatarFallback>{getInitials(post.author.name)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="font-medium">{post.author.name}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {formatDate(post.createdAt)}
+          <Card className="mb-8">
+            <CardContent className="p-6">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+              >
+                <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
+                <div className="flex items-center space-x-2 mb-4">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={post.author?.image || ''} alt={post.author?.name || 'Author'} />
+                    <AvatarFallback>{post.author?.name?.charAt(0) || 'A'}</AvatarFallback>
+                  </Avatar>
+                  <div className="text-sm">
+                    <span className="font-medium">{post.author?.name}</span>
+                    <p className="text-xs text-muted-foreground">
+                      <Clock className="inline-block h-3 w-3 mr-1" />
+                      {formatDate(post.createdAt)}
+                    </p>
                   </div>
                 </div>
-              </div>
-              
-              {post.categories.length > 0 && (
-                <div className="ml-auto flex space-x-2">
-                  {post.categories.map(category => (
-                    <Badge key={category.id} variant="secondary">
+                <p className="text-md leading-relaxed">{post.content}</p>
+                <div className="mt-4">
+                  {post.categories?.map((category) => (
+                    <Badge key={category.id} variant="secondary" className="mr-2">
                       {category.name}
                     </Badge>
                   ))}
                 </div>
-              )}
-            </div>
+              </motion.div>
+            </CardContent>
+          </Card>
+          
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 mr-1" />
+              Comments ({post.comments.length})
+            </h2>
+            {post.comments.length === 0 ? (
+              <p className="text-muted-foreground">No comments yet. Be the first to comment!</p>
+            ) : (
+              <div>
+                {post.comments.map((comment: any) => (
+                  <CommentItem key={comment.id} comment={comment} />
+                ))}
+              </div>
+            )}
           </motion.div>
           
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="mb-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="mt-6"
           >
-            <img 
-              src={imageUrl} 
-              alt={post.title}
-              className="w-full h-auto rounded-lg object-cover mb-10"
-            />
-            
-            <div className="prose prose-lg max-w-none">
-              {/* Split content by paragraphs and render */}
-              {post.content.split('\n\n').map((paragraph, idx) => (
-                <p key={idx} className="mb-6 text-lg leading-relaxed">{paragraph}</p>
-              ))}
-            </div>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-          >
-            <div className="border-t border-border pt-10">
-              <h2 className="text-2xl font-bold mb-6 flex items-center">
-                <MessageCircle className="mr-2" />
-                Comments ({post.comments.length})
-              </h2>
-              
-              {/* Comment Form for logged-in users */}
-              {isAuthenticated ? (
-                <form onSubmit={handleCommentSubmit} className="mb-8">
-                  <div className="flex items-start gap-3">
-                    <Avatar className="h-10 w-10 mt-1">
-                      <AvatarImage src={user?.profilePicture || `https://avatar.vercel.sh/${user?.id}`} />
-                      <AvatarFallback>{user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <Textarea 
-                        placeholder="Add a comment..." 
-                        value={commentText}
-                        onChange={(e) => setCommentText(e.target.value)}
-                        className="resize-none mb-2"
-                        required
-                      />
-                      <Button 
-                        type="submit" 
-                        size="sm"
-                        disabled={isSubmitting || !commentText.trim()}
-                        className="ml-auto"
-                      >
-                        {isSubmitting ? 'Posting...' : 'Post comment'} <Send className="ml-2 h-4 w-4" />
-                      </Button>
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-xl font-semibold mb-4">Add a Comment</h3>
+                {isAuthenticated ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-4">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user?.profilePicture || user?.image || ''} alt={user?.username || 'User'} />
+                        <AvatarFallback>{user?.firstName?.charAt(0) || user?.username?.charAt(0) || 'U'}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm">
+                        Commenting as <span className="font-medium">{user?.firstName} {user?.lastName}</span>
+                      </span>
                     </div>
-                  </div>
-                </form>
-              ) : (
-                <div className="bg-muted/30 p-4 rounded-lg mb-8 text-center">
-                  <p className="text-muted-foreground">
-                    <Button 
-                      variant="link" 
-                      className="p-0 h-auto font-normal"
-                      onClick={() => document.getElementById('auth-modal-trigger')?.click()}
+                    <Textarea
+                      placeholder="Write your comment here..."
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      className="ring-focus"
+                    />
+                    <Button
+                      onClick={handleCommentSubmit}
+                      disabled={isSubmitting}
+                      className="glass-button"
                     >
-                      Sign in
-                    </Button> to add a comment
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        "Post Comment"
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground">
+                    You must be <Button variant="link" onClick={() => navigate('/login')}>logged in</Button> to post a comment.
                   </p>
-                </div>
-              )}
-              
-              {post.comments.length === 0 ? (
-                <div className="text-center py-8 bg-muted/30 rounded-lg">
-                  <p className="text-muted-foreground">No comments yet</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {post.comments.map((comment) => (
-                    <CommentItem key={comment.id} comment={comment} />
-                  ))}
-                </div>
-              )}
-            </div>
+                )}
+              </CardContent>
+            </Card>
           </motion.div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </main>
+      
+      <Footer />
     </div>
   );
-};
-
-const CommentItem = ({ comment }: { comment: Comment }) => {
-  return (
-    <div className="bg-muted/30 p-4 rounded-lg">
-      <div className="flex items-start space-x-3">
-        <Avatar className="h-8 w-8">
-          <AvatarImage src={`https://avatar.vercel.sh/${comment.authorDTO.id}`} />
-          <AvatarFallback>
-            {comment.authorDTO.name.charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1">
-          <div className="flex justify-between mb-1">
-            <span className="font-medium">{comment.authorDTO.name}</span>
-            <span className="text-xs text-muted-foreground">
-              {formatDate(comment.createdAt)}
-            </span>
-          </div>
-          <p className="text-sm">{comment.text}</p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default BlogPost;
+}

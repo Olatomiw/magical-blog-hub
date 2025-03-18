@@ -1,4 +1,3 @@
-
 export interface Author {
   id: string;
   name: string;
@@ -12,7 +11,7 @@ export interface Comment {
 }
 
 export interface Category {
-  id: string;
+  id: number;
   name: string;
 }
 
@@ -42,6 +41,19 @@ export interface CommentResponse {
   status: string;
   message: string;
   data: Comment;
+}
+
+export interface CreatePostRequest {
+  title: string;
+  content: string;
+  status: string;
+  categoryIds: number[];
+}
+
+export interface CreatePostResponse {
+  status: string;
+  message: string;
+  data: Post;
 }
 
 export interface User {
