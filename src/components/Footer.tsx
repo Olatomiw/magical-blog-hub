@@ -1,5 +1,5 @@
 
-import { GitHub, Mail, Twitter } from 'lucide-react';
+import { Github, Mail, Twitter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
@@ -41,7 +41,7 @@ const Footer = () => {
             <h3 className="font-semibold text-lg mb-3">Connect</h3>
             <div className="flex space-x-4">
               <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                <GitHub className="h-5 w-5" />
+                <Github className="h-5 w-5" />
                 <span className="sr-only">GitHub</span>
               </a>
               <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">

@@ -1,6 +1,8 @@
+
 export interface Author {
   id: string;
   name: string;
+  image?: string;
 }
 
 export interface Comment {

@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getAllPosts, formatDate, createComment } from "@/lib/api";
@@ -149,7 +150,6 @@ export default function BlogPost() {
                 <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
                 <div className="flex items-center space-x-2 mb-4">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={post.author?.image || ''} alt={post.author?.name || 'Author'} />
                     <AvatarFallback>{post.author?.name?.charAt(0) || 'A'}</AvatarFallback>
                   </Avatar>
                   <div className="text-sm">
