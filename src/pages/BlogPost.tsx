@@ -1,57 +1,22 @@
 
+import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { getAllPosts, formatDate, createComment, summarizePost } from "@/lib/api";
+import { getAllPosts } from "@/lib/api";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useAuth } from "@/context/AuthContext";
-import { useState } from "react";
-import { toast } from "@/components/ui/use-toast";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { ArrowLeft, MessageSquare, Clock, User, Loader2, Brain, Sparkles } from "lucide-react";
 import { Post } from "@/lib/types";
-import { Badge } from "@/components/ui/badge";
-import SummaryDialog from "@/components/SummaryDialog";
+import BlogPostContent from "@/components/blog/BlogPostContent";
+import CommentsList from "@/components/blog/CommentsList";
+import CommentForm from "@/components/blog/CommentForm";
+import SummarizeButton from "@/components/blog/SummarizeButton";
 
-interface CommentItemProps {
-  comment: any;
-}
-
-const CommentItem: React.FC<CommentItemProps> = ({ comment }) => {
-  return (
-    <Card className="mb-4">
-      <CardContent className="p-4">
-        <div className="flex items-start space-x-4">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={comment.authorDTO?.image || ''} alt={comment.authorDTO?.name || 'User'} />
-            <AvatarFallback>{comment.authorDTO?.name?.charAt(0) || 'U'}</AvatarFallback>
-          </Avatar>
-          <div>
-            <div className="text-sm font-medium">{comment.authorDTO?.name}</div>
-            <div className="text-xs text-muted-foreground">
-              {formatDate(comment.createdAt)}
-            </div>
-            <p className="text-sm mt-1">{comment.text}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-export default function BlogPost() {
+const BlogPost: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
-  const [commentText, setCommentText] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSummarizing, setIsSummarizing] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
-  const [summary, setSummary] = useState("");
 
   const { data: postsData, isLoading, isError } = useQuery({
     queryKey: ["posts"],
@@ -62,74 +27,6 @@ export default function BlogPost() {
 
   const handleGoBack = () => {
     navigate("/");
-  };
-
-  const handleCommentSubmit = async () => {
-    if (!isAuthenticated) {
-      toast({
-        title: "Authentication Required",
-        description: "You must be logged in to post a comment.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!commentText.trim()) {
-      toast({
-        title: "Empty Comment",
-        description: "Please enter some text for your comment.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await createComment(id!, commentText);
-      setCommentText("");
-      toast({
-        title: "Comment Posted",
-        description: "Your comment has been posted successfully.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error Posting Comment",
-        description: error.message || "Failed to post comment.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleSummarize = async () => {
-    if (!isAuthenticated) {
-      toast({
-        title: "Authentication Required",
-        description: "You must be logged in to use AI summarization.",
-        variant: "destructive",
-      });
-      navigate("/login");
-      return;
-    }
-
-    setIsSummarizing(true);
-    setShowSummary(true);
-    setSummary("");
-
-    try {
-      const result = await summarizePost(id!);
-      setSummary(result.summary);
-    } catch (error: any) {
-      toast({
-        title: "Error Summarizing Post",
-        description: error.message || "Failed to summarize post.",
-        variant: "destructive",
-      });
-      setShowSummary(false);
-    } finally {
-      setIsSummarizing(false);
-    }
   };
 
   if (isLoading) {
@@ -174,129 +71,16 @@ export default function BlogPost() {
             Back to Home
           </Button>
           
-          <Card className="mb-8">
-            <CardContent className="p-6">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-              >
-                <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
-                <div className="flex items-center space-x-2 mb-4">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>{post.author?.name?.charAt(0) || 'A'}</AvatarFallback>
-                  </Avatar>
-                  <div className="text-sm">
-                    <span className="font-medium">{post.author?.name}</span>
-                    <p className="text-xs text-muted-foreground">
-                      <Clock className="inline-block h-3 w-3 mr-1" />
-                      {formatDate(post.createdAt)}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-md leading-relaxed">{post.content}</p>
-                <div className="mt-4">
-                  {post.categories?.map((category) => (
-                    <Badge key={category.id} variant="secondary" className="mr-2">
-                      {category.name}
-                    </Badge>
-                  ))}
-                </div>
-              </motion.div>
-            </CardContent>
-          </Card>
-          
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-          >
-            <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 mr-1" />
-              Comments ({post.comments.length})
-            </h2>
-            {post.comments.length === 0 ? (
-              <p className="text-muted-foreground">No comments yet. Be the first to comment!</p>
-            ) : (
-              <div>
-                {post.comments.map((comment: any) => (
-                  <CommentItem key={comment.id} comment={comment} />
-                ))}
-              </div>
-            )}
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6, duration: 0.5 }}
-            className="mt-6"
-          >
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-xl font-semibold mb-4">Add a Comment</h3>
-                {isAuthenticated ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-4">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.profilePicture || user?.image || ''} alt={user?.username || 'User'} />
-                        <AvatarFallback>{user?.firstName?.charAt(0) || user?.username?.charAt(0) || 'U'}</AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm">
-                        Commenting as <span className="font-medium">{user?.firstName} {user?.lastName}</span>
-                      </span>
-                    </div>
-                    <Textarea
-                      placeholder="Write your comment here..."
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
-                      className="ring-focus"
-                    />
-                    <Button
-                      onClick={handleCommentSubmit}
-                      disabled={isSubmitting}
-                      className="glass-button"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Submitting...
-                        </>
-                      ) : (
-                        "Post Comment"
-                      )}
-                    </Button>
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">
-                    You must be <Button variant="link" onClick={() => navigate('/login')}>logged in</Button> to post a comment.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <div className="mt-8 flex justify-center">
-            <Button 
-              onClick={handleSummarize}
-              className="glass-button bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 transition-all"
-              size="lg"
-            >
-              <Sparkles className="mr-2 h-5 w-5 text-yellow-200" />
-              Summarize with AI
-            </Button>
-          </div>
+          <BlogPostContent post={post} />
+          <CommentsList comments={post.comments} />
+          <CommentForm postId={id!} />
+          <SummarizeButton postId={id!} />
         </motion.div>
       </main>
       
       <Footer />
-
-      <SummaryDialog 
-        isOpen={showSummary}
-        onClose={() => setShowSummary(false)}
-        summary={summary}
-        isLoading={isSummarizing}
-      />
     </div>
   );
-}
+};
+
+export default BlogPost;
