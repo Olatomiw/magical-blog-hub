@@ -71,12 +71,14 @@ export async function summarizePost(postId: string): Promise<{ summary: string }
     throw new Error('Authentication required');
   }
   
-  return fetchWithErrorHandling<{ summary: string }>(`${API_BASE_URL}/${postId}/ai`, {
+  const response = await fetchWithErrorHandling<{ content: string }>(`${API_BASE_URL}/${postId}/ai`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
     },
   });
+  
+  return { summary: response.content };
 }
 
 // Categories API
