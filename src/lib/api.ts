@@ -1,4 +1,3 @@
-
 import { toast } from '@/components/ui/use-toast';
 import type { 
   PostsResponse, 
@@ -61,6 +60,22 @@ export async function createPost(title: string, content: string, status: string,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ title, content, status, categoryIds }),
+  });
+}
+
+// AI Summarization API
+export async function summarizePost(postId: string): Promise<{ summary: string }> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+  
+  return fetchWithErrorHandling<{ summary: string }>(`${API_BASE_URL}/${postId}/ai`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
   });
 }
 
