@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { Navigate } from 'react-router-dom';
@@ -10,20 +11,27 @@ import Footer from '@/components/Footer';
 import UserProfileHeader from '@/components/profile/UserProfileHeader';
 import PostsList from '@/components/profile/PostsList';
 import DeleteConfirmationDialog from '@/components/profile/DeleteConfirmationDialog';
+import { Post } from '@/lib/types';
 
 const Profile = () => {
   const { user, isAuthenticated } = useAuth();
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [postToDelete, setPostToDelete] = useState<string | null>(null);
+  const [userPosts, setUserPosts] = useState<Post[]>([]);
   const queryClient = useQueryClient();
+  
+  // Update local posts state when user data changes
+  useEffect(() => {
+    if (user?.postResponseList) {
+      setUserPosts(user.postResponseList);
+    }
+  }, [user]);
   
   // If not authenticated, redirect to home page
   if (!isAuthenticated) {
     return <Navigate to="/" />;
   }
-  
-  const userPosts = user?.postResponseList || [];
   
   const handleDeleteClick = (postId: string) => {
     setPostToDelete(postId);
@@ -37,8 +45,10 @@ const Profile = () => {
       setIsDeleting(postToDelete);
       await deletePost(postToDelete);
       
-      // Update local state to reflect deletion
-      // Since we're using the user context for posts, we need to refresh the data
+      // Update local state immediately to remove the deleted post
+      setUserPosts(prevPosts => prevPosts.filter(post => post.id !== postToDelete));
+      
+      // Invalidate the query to refresh user data from backend
       queryClient.invalidateQueries({ queryKey: ['user'] });
       
       toast({
