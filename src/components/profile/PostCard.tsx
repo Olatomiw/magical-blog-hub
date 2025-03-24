@@ -10,7 +10,7 @@ import { Post } from '@/lib/types';
 interface PostCardProps {
   post: Post;
   onDeleteClick: (postId: string) => void;
-  isDeleting: boolean;
+  isDeleting: string | null;
 }
 
 const PostCard = ({ post, onDeleteClick, isDeleting }: PostCardProps) => {

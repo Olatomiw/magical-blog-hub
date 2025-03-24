@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -86,13 +85,12 @@ const PostsList = ({ posts, onDeleteClick, isDeleting }: PostsListProps) => {
                 <PostCard 
                   post={post} 
                   onDeleteClick={onDeleteClick} 
-                  isDeleting={isDeleting === post.id} 
+                  isDeleting={isDeleting} 
                 />
               </motion.div>
             ))}
           </motion.div>
           
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-center mt-8">
               <nav className="flex space-x-1">
@@ -137,3 +135,4 @@ const PostsList = ({ posts, onDeleteClick, isDeleting }: PostsListProps) => {
 };
 
 export default PostsList;
+
