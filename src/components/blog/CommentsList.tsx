@@ -16,12 +16,12 @@ const CommentsList: React.FC<CommentsListProps> = ({ comments }) => {
       animate={{ opacity: 1 }}
       transition={{ delay: 0.4, duration: 0.5 }}
     >
-      <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+      <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2 font-serif">
         <MessageSquare className="h-5 w-5 mr-1" />
         Comments ({comments.length})
       </h2>
       {comments.length === 0 ? (
-        <p className="text-muted-foreground">No comments yet. Be the first to comment!</p>
+        <p className="text-muted-foreground italic">No comments yet. Be the first to comment!</p>
       ) : (
         <div>
           {comments.map((comment) => (

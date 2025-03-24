@@ -21,7 +21,7 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post }) => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
+          <h1 className="text-3xl font-bold mb-4 font-serif">{post.title}</h1>
           <div className="flex items-center space-x-2 mb-4">
             <Avatar className="h-8 w-8">
               <AvatarFallback>{post.author?.name?.charAt(0) || 'A'}</AvatarFallback>
@@ -34,7 +34,7 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post }) => {
               </p>
             </div>
           </div>
-          <p className="text-md leading-relaxed">{post.content}</p>
+          <p className="text-md leading-relaxed font-serif tracking-wide">{post.content}</p>
           <div className="mt-4">
             {post.categories?.map((category) => (
               <Badge key={category.id} variant="secondary" className="mr-2">

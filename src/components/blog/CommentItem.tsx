@@ -11,7 +11,7 @@ interface CommentItemProps {
 
 const CommentItem: React.FC<CommentItemProps> = ({ comment }) => {
   return (
-    <Card className="mb-4">
+    <Card className="mb-4 hover:shadow-md transition-all duration-300">
       <CardContent className="p-4">
         <div className="flex items-start space-x-4">
           <Avatar className="h-8 w-8">
@@ -23,7 +23,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment }) => {
             <div className="text-xs text-muted-foreground">
               {formatDate(comment.createdAt)}
             </div>
-            <p className="text-sm mt-1">{comment.text}</p>
+            <p className="text-sm mt-1 font-serif">{comment.text}</p>
           </div>
         </div>
       </CardContent>

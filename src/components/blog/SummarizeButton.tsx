@@ -54,7 +54,7 @@ const SummarizeButton: React.FC<SummarizeButtonProps> = ({ postId }) => {
       <div className="mt-8 flex justify-center">
         <Button 
           onClick={handleSummarize}
-          className="glass-button bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 transition-all"
+          className="glass-button bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 transition-all font-medium"
           size="lg"
         >
           <Sparkles className="mr-2 h-5 w-5 text-yellow-200" />
