@@ -14,7 +14,7 @@ const CommentsList: React.FC<CommentsListProps> = ({ comments }) => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ delay: 0.4, duration: 0.5 }}
+      transition={{ delay: 0.2, duration: 0.4 }}
     >
       <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2 font-serif">
         <MessageSquare className="h-5 w-5 mr-1" />
