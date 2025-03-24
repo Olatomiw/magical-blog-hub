@@ -63,6 +63,21 @@ export async function createPost(title: string, content: string, status: string,
   });
 }
 
+export async function deletePost(postId: string): Promise<any> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+  
+  return fetchWithErrorHandling<any>(`${API_BASE_URL}/post/delete/${postId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+}
+
 // AI Summarization API
 export async function summarizePost(postId: string): Promise<{ summary: string }> {
   const token = localStorage.getItem('token');

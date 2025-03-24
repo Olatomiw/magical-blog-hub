@@ -1,21 +1,37 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatDate, truncateText } from '@/lib/api';
+import { formatDate, truncateText, deletePost } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, MessageCircle, Clock, Calendar, Plus } from 'lucide-react';
+import { User, MessageCircle, Clock, Calendar, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Navigate } from 'react-router-dom';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from "@/components/ui/alert-dialog";
+import { toast } from '@/components/ui/use-toast';
 
 const Profile = () => {
   const { user, isAuthenticated } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const itemsPerPage = 6;
   
   // If not authenticated, redirect to home page
@@ -32,6 +48,45 @@ const Profile = () => {
   const currentPosts = userPosts.slice(indexOfFirstPost, indexOfLastPost);
   
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  
+  const handleDeleteClick = (postId: string) => {
+    setPostToDelete(postId);
+    setShowDeleteDialog(true);
+  };
+  
+  const handleDeleteConfirm = async () => {
+    if (!postToDelete) return;
+    
+    try {
+      setIsDeleting(postToDelete);
+      await deletePost(postToDelete);
+      
+      // Update local state to reflect deletion
+      // Since we're using the user context for posts, we need to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      
+      toast({
+        title: "Post deleted",
+        description: "Your post has been successfully deleted.",
+      });
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete post. Please try again.",
+      });
+    } finally {
+      setIsDeleting(null);
+      setShowDeleteDialog(false);
+      setPostToDelete(null);
+    }
+  };
+  
+  const handleDeleteCancel = () => {
+    setShowDeleteDialog(false);
+    setPostToDelete(null);
+  };
   
   // Animations
   const container = {
@@ -59,6 +114,7 @@ const Profile = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
+        {/* User profile information section */}
         <motion.div 
           className="mb-12 text-center md:text-left md:flex items-center gap-8"
           variants={container}
@@ -144,7 +200,7 @@ const Profile = () => {
               >
                 {currentPosts.map((post) => (
                   <motion.div key={post.id} variants={item}>
-                    <Card className="h-full flex flex-col hover:shadow-md transition-shadow duration-200">
+                    <Card className="h-full flex flex-col hover:shadow-md transition-shadow duration-200 relative">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-xl mb-1 line-clamp-2">
                           <Link to={`/blog/${post.id}`} className="hover:text-primary transition-colors">
@@ -168,16 +224,34 @@ const Profile = () => {
                           <MessageCircle className="h-3 w-3 mr-1" />
                           {post.comments.length} comment{post.comments.length !== 1 ? 's' : ''}
                         </span>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          asChild
-                          className="text-xs"
-                        >
-                          <Link to={`/blog/${post.id}`}>
-                            Read More
-                          </Link>
-                        </Button>
+                        <div className="flex items-center space-x-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            asChild
+                            className="text-xs"
+                          >
+                            <Link to={`/blog/${post.id}`}>
+                              Read More
+                            </Link>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs p-1 h-auto hover:bg-destructive/10 hover:text-destructive"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleDeleteClick(post.id);
+                            }}
+                            disabled={isDeleting === post.id}
+                          >
+                            {isDeleting === post.id ? (
+                              <span className="h-4 w-4 animate-spin rounded-full border-2 border-destructive border-r-transparent" />
+                            ) : (
+                              <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                            )}
+                          </Button>
+                        </div>
                       </CardFooter>
                     </Card>
                   </motion.div>
@@ -228,6 +302,27 @@ const Profile = () => {
       </motion.div>
       
       <Footer />
+      
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Post</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this post? This action cannot be undone and all comments will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDeleteCancel}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
