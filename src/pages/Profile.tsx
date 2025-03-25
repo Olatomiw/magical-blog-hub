@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
-import { Navigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { deletePost } from '@/lib/api';
 import { toast } from '@/components/ui/use-toast';
@@ -20,6 +20,8 @@ const Profile = () => {
   const [postToDelete, setPostToDelete] = useState<string | null>(null);
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const location = useLocation();
   
   // Update local posts state when user data changes
   useEffect(() => {
@@ -28,9 +30,18 @@ const Profile = () => {
     }
   }, [user]);
   
-  // If not authenticated, redirect to home page
-  if (!isAuthenticated) {
-    return <Navigate to="/" />;
+  // Check authentication status and redirect if needed
+  useEffect(() => {
+    // Only redirect if we've determined the user is not authenticated
+    // This prevents unnecessary redirects on initial load
+    if (isAuthenticated === false) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+  
+  // If still determining auth status, show nothing to prevent flash
+  if (isAuthenticated === undefined) {
+    return null;
   }
   
   const handleDeleteClick = (postId: string) => {

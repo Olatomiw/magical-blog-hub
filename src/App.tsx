@@ -11,7 +11,15 @@ import Profile from "./pages/Profile";
 import CreatePost from "./pages/CreatePost";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+// Create a new query client with proper settings for persisting queries
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
