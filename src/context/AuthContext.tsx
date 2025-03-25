@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { LoginCredentials, SignupCredentials, User } from '@/lib/types';
 import { toast } from '@/components/ui/use-toast';
+import { login as apiLogin, signup as apiSignup } from '@/lib/api';
 
 // Define the shape of our auth context
 interface AuthContextType {
@@ -30,61 +31,6 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// Mock auth functions for demo purposes
-// In a real app, these would connect to a backend service
-const mockLogin = async (credentials: LoginCredentials): Promise<User> => {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Mock user data
-  return {
-    id: "1",
-    username: "demo_user",
-    firstName: "Demo",
-    lastName: "User",
-    email: credentials.email,
-    role: "USER",
-    bio: "This is a demo user account.",
-    profilePicture: null,
-    createdAt: new Date().toISOString(),
-    postResponseList: [
-      {
-        id: "post1",
-        title: "My First Post",
-        content: "This is the content of my first post. It's pretty cool!",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        status: "published",
-        author: {
-          id: "1",
-          username: "demo_user",
-        },
-        comments: [],
-        categories: []
-      }
-    ]
-  };
-};
-
-const mockSignup = async (credentials: SignupCredentials): Promise<User> => {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  // Mock user data
-  return {
-    id: "1",
-    username: credentials.username || "new_user",
-    firstName: credentials.firstName || "",
-    lastName: credentials.lastName || "",
-    email: credentials.email,
-    role: "USER",
-    bio: credentials.bio || "",
-    profilePicture: credentials.image ? URL.createObjectURL(credentials.image) : null,
-    createdAt: new Date().toISOString(),
-    postResponseList: []
-  };
-};
-
 // AuthProvider component
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | undefined>(undefined);
@@ -95,7 +41,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const checkAuth = () => {
       const storedUser = localStorage.getItem('user');
-      if (storedUser) {
+      const token = localStorage.getItem('token');
+      
+      if (storedUser && token) {
         setUser(JSON.parse(storedUser));
         setIsAuthenticated(true);
       } else {
@@ -106,25 +54,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth();
   }, []);
   
-  // Login function
+  // Login function that uses the API endpoint
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     setIsLoading(true);
     
     try {
-      // In a real app, this would be an API call
-      const userData = await mockLogin(credentials);
+      const response = await apiLogin(credentials);
       
-      // Store user data
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-      setIsAuthenticated(true);
-      
-      toast({
-        title: "Welcome back!",
-        description: `You've successfully logged in.`,
-      });
-      
-      return true;
+      if (response.data?.token && response.data?.userData) {
+        // Store token and user data
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.userData));
+        
+        setUser(response.data.userData);
+        setIsAuthenticated(true);
+        
+        toast({
+          title: "Welcome back!",
+          description: `You've successfully logged in.`,
+        });
+        
+        return true;
+      } else {
+        throw new Error('Invalid response format from server');
+      }
     } catch (error) {
       console.error('Login error:', error);
       setIsAuthenticated(false);
@@ -132,7 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: "Invalid email or password. Please try again.",
+        description: error instanceof Error ? error.message : "Invalid email or password. Please try again.",
       });
       
       return false;
@@ -141,25 +94,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
   
-  // Signup function
+  // Signup function that uses the API endpoint
   const signup = async (credentials: SignupCredentials): Promise<boolean> => {
     setIsLoading(true);
     
     try {
-      // In a real app, this would be an API call
-      const userData = await mockSignup(credentials);
+      const response = await apiSignup(credentials);
       
-      // Store user data
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-      setIsAuthenticated(true);
-      
-      toast({
-        title: "Account created!",
-        description: "Your account has been successfully created.",
-      });
-      
-      return true;
+      if (response.data?.token && response.data?.userData) {
+        // Store token and user data
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.userData));
+        
+        setUser(response.data.userData);
+        setIsAuthenticated(true);
+        
+        toast({
+          title: "Account created!",
+          description: "Your account has been successfully created.",
+        });
+        
+        return true;
+      } else {
+        throw new Error('Invalid response format from server');
+      }
     } catch (error) {
       console.error('Signup error:', error);
       setIsAuthenticated(false);
@@ -167,7 +125,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       toast({
         variant: "destructive",
         title: "Signup Failed",
-        description: "Unable to create your account. Please try again.",
+        description: error instanceof Error ? error.message : "Unable to create your account. Please try again.",
       });
       
       return false;
@@ -179,6 +137,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Logout function
   const logout = () => {
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
     setUser(null);
     setIsAuthenticated(false);
     
