@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Search, Loader2, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { Search, Loader2, Sparkles, Wifi, WifiOff } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import { 
   Pagination, 
   PaginationContent, 
@@ -28,12 +29,19 @@ export default function Index() {
   const navigate = useNavigate();
   const postsPerPage = 6;
   
+  // WebSocket connection for real-time updates
+  const wsUrl = "ws://localhost:8080/api/update";
+  const { isConnected, posts: wsPostsData, lastMessage } = useWebSocket(wsUrl);
+  
+  // Fallback to traditional API when WebSocket isn't available
   const { data, isLoading, isError } = useQuery({
     queryKey: ["posts"],
     queryFn: getAllPosts,
+    enabled: !isConnected, // Only run query if WebSocket is not connected
   });
   
-  const posts = data?.data || [];
+  // Use WebSocket data if available, otherwise use API data
+  const posts = isConnected ? wsPostsData : (data?.data || []);
   
   // Filter posts based on search term
   const filteredPosts = posts.filter((post: Post) => {
@@ -48,6 +56,11 @@ export default function Index() {
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  
+  // Reset to first page when data changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [lastMessage]);
   
   // Handle page change
   const paginate = (pageNumber: number) => {
@@ -73,6 +86,21 @@ export default function Index() {
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Discover stories, thoughts, and ideas on a variety of topics.
             </p>
+            
+            {/* WebSocket connection indicator */}
+            <div className="flex items-center justify-center gap-2 mt-2">
+              {isConnected ? (
+                <div className="flex items-center text-green-500 text-sm">
+                  <Wifi className="h-4 w-4 mr-1" />
+                  <span>Live updates active</span>
+                </div>
+              ) : (
+                <div className="flex items-center text-yellow-500 text-sm">
+                  <WifiOff className="h-4 w-4 mr-1" />
+                  <span>Using standard updates</span>
+                </div>
+              )}
+            </div>
           </motion.div>
           
           <motion.div
@@ -110,7 +138,7 @@ export default function Index() {
             </motion.div>
           )}
           
-          {isLoading ? (
+          {(!isConnected && isLoading) ? (
             <div className="flex justify-center items-center py-20">
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
             </div>
