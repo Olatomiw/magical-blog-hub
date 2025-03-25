@@ -100,22 +100,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     try {
       const response = await apiSignup(credentials);
+      console.log('Signup response received:', response);
       
-      if (response.data?.token && response.data?.userData) {
+      // The response format from signup is the same as login
+      // It contains token and userData in the data object
+      if (response.body?.data?.token && response.body?.data?.userData) {
         // Store token and user data
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.userData));
+        localStorage.setItem('token', response.body.data.token);
+        localStorage.setItem('user', JSON.stringify(response.body.data.userData));
         
-        setUser(response.data.userData);
+        setUser(response.body.data.userData);
         setIsAuthenticated(true);
         
         toast({
           title: "Account created!",
-          description: "Your account has been successfully created.",
+          description: "Your account has been successfully created and you're now logged in.",
         });
         
         return true;
       } else {
+        console.error('Invalid signup response format:', response);
         throw new Error('Invalid response format from server');
       }
     } catch (error) {

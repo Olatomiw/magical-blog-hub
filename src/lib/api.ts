@@ -152,7 +152,7 @@ export async function login(credentials: LoginCredentials): Promise<AuthResponse
   }
 }
 
-export async function signup(credentials: SignupCredentials): Promise<AuthResponse> {
+export async function signup(credentials: SignupCredentials): Promise<any> {
   const { image, ...otherCredentials } = credentials;
   
   if (!image) {
@@ -192,7 +192,7 @@ export async function signup(credentials: SignupCredentials): Promise<AuthRespon
       throw new Error(errorMessage);
     }
     
-    return responseData as AuthResponse;
+    return responseData;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred during signup';
     toast({
