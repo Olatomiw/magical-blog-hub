@@ -13,6 +13,40 @@ interface BlogPostContentProps {
 }
 
 const BlogPostContent: React.FC<BlogPostContentProps> = ({ post }) => {
+  // Function to process content and add formatting
+  const formatContent = (content: string) => {
+    if (!content) return "";
+    
+    // Split content into paragraphs
+    const paragraphs = content.split('\n\n');
+    
+    return paragraphs.map((paragraph, index) => {
+      // Check if paragraph starts with a number followed by a period (likely a list item)
+      const listItemRegex = /^(\d+)\.\s(.+)$/;
+      const isListItem = listItemRegex.test(paragraph);
+      
+      if (isListItem) {
+        const match = paragraph.match(listItemRegex);
+        if (match) {
+          const [, number, text] = match;
+          return (
+            <div key={index} className="flex items-start space-x-2 mb-4">
+              <span className="font-bold text-primary">{number}.</span>
+              <p className="text-md leading-relaxed font-serif tracking-wide">{text}</p>
+            </div>
+          );
+        }
+      }
+      
+      // Handle regular paragraphs
+      return (
+        <p key={index} className="text-md leading-relaxed font-serif tracking-wide text-justify mb-4">
+          {paragraph}
+        </p>
+      );
+    });
+  };
+
   return (
     <Card className="mb-8">
       <CardContent className="p-6">
@@ -22,7 +56,7 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post }) => {
           transition={{ delay: 0.2, duration: 0.5 }}
         >
           <h1 className="text-3xl font-bold mb-4 font-serif">{post.title}</h1>
-          <div className="flex items-center space-x-2 mb-4">
+          <div className="flex items-center space-x-2 mb-6">
             <Avatar className="h-8 w-8">
               <AvatarFallback>{post.author?.name?.charAt(0) || 'A'}</AvatarFallback>
             </Avatar>
@@ -34,8 +68,12 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post }) => {
               </p>
             </div>
           </div>
-          <p className="text-md leading-relaxed font-serif tracking-wide">{post.content}</p>
-          <div className="mt-4">
+          
+          <div className="prose prose-slate max-w-none dark:prose-invert font-serif">
+            {formatContent(post.content)}
+          </div>
+          
+          <div className="mt-6">
             {post.categories?.map((category) => (
               <Badge key={category.id} variant="secondary" className="mr-2">
                 {category.name}
