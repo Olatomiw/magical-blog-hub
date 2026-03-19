@@ -51,16 +51,15 @@ const SummarizeButton: React.FC<SummarizeButtonProps> = ({ postId }) => {
 
   return (
     <>
-      <div className="mt-8 flex justify-center">
-        <Button 
-          onClick={handleSummarize}
-          className="glass-button bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 transition-all font-medium"
-          size="lg"
-        >
-          <Sparkles className="mr-2 h-5 w-5 text-yellow-200" />
-          Summarize with AI
-        </Button>
-      </div>
+      <Button 
+        onClick={handleSummarize}
+        variant="outline"
+        size="sm"
+        className="gap-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50 transition-all"
+      >
+        <Sparkles className="h-4 w-4 text-yellow-500" />
+        Summarize
+      </Button>
 
       <SummaryDialog 
         isOpen={showSummary}

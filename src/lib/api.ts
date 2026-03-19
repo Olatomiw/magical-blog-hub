@@ -46,21 +46,45 @@ export async function getAllPosts(): Promise<PostsResponse> {
   return fetchWithErrorHandling<PostsResponse>(`${API_BASE_URL}/post/getAllPost`);
 }
 
-export async function createPost(title: string, content: string, status: string, categoryIds: number[]): Promise<any> {
+export async function createPost(title: string, content: string, status: string, categoryIds: number[], image?: File): Promise<any> {
   const token = localStorage.getItem('token');
   
   if (!token) {
     throw new Error('Authentication required');
   }
   
-  return fetchWithErrorHandling<any>(`${API_BASE_URL}/post/create`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ title, content, status, categoryIds }),
-  });
+  const formData = new FormData();
+  const postBody = { title, content, status, categoryIds };
+  formData.append('PostBody', new Blob([JSON.stringify(postBody)], { type: 'application/json' }));
+  
+  if (image) {
+    formData.append('image', image);
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/post/create`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Request failed with status ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: errorMessage,
+    });
+    throw error;
+  }
 }
 
 export async function deletePost(postId: string): Promise<any> {

@@ -3,6 +3,7 @@ export interface Author {
   id: string;
   name: string;
   image?: string;
+  imageUrl?: string;
 }
 
 export interface Comment {
@@ -22,6 +23,7 @@ export interface Post {
   title: string;
   content: string;
   status: string;
+  imageUrl?: string;
   createdAt: string;
   updatedAt: string;
   author: Author;
