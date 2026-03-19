@@ -3,6 +3,7 @@ export interface Author {
   id: string;
   name: string;
   image?: string;
+  imageUrl?: string;
 }
 
 export interface Comment {
