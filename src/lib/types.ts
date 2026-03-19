@@ -23,6 +23,7 @@ export interface Post {
   title: string;
   content: string;
   status: string;
+  imageUrl?: string;
   createdAt: string;
   updatedAt: string;
   author: Author;

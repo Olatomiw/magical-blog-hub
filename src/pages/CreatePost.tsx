@@ -13,7 +13,7 @@ import { toast } from '@/components/ui/use-toast';
 import { createPost, getAllCategories } from '@/lib/api';
 import { Category } from '@/lib/types';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ImagePlus, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const CreatePost = () => {
@@ -27,9 +27,10 @@ const CreatePost = () => {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   
   useEffect(() => {
-    // Fetch categories when component mounts
     const fetchCategories = async () => {
       try {
         const categoriesData = await getAllCategories();
@@ -45,23 +46,32 @@ const CreatePost = () => {
         setIsLoadingCategories(false);
       }
     };
-    
     fetchCategories();
   }, []);
   
-  // Redirect if not authenticated
   if (!isAuthenticated) {
     return <Navigate to="/" />;
   }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+  };
   
   const handleCategoryToggle = (categoryId: number) => {
-    setSelectedCategoryIds(prev => {
-      if (prev.includes(categoryId)) {
-        return prev.filter(id => id !== categoryId);
-      } else {
-        return [...prev, categoryId];
-      }
-    });
+    setSelectedCategoryIds(prev =>
+      prev.includes(categoryId) ? prev.filter(id => id !== categoryId) : [...prev, categoryId]
+    );
   };
   
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,14 +89,11 @@ const CreatePost = () => {
     setIsLoading(true);
     
     try {
-      await createPost(title, content, status, selectedCategoryIds);
-      
+      await createPost(title, content, status, selectedCategoryIds, imageFile || undefined);
       toast({
         title: "Success!",
         description: "Your post has been created successfully.",
       });
-      
-      // Navigate to the profile page after successful post creation
       navigate('/profile');
     } catch (error) {
       console.error('Error creating post:', error);
@@ -110,7 +117,7 @@ const CreatePost = () => {
           <p className="text-muted-foreground">Share your thoughts with the world</p>
         </motion.div>
         
-        <Card className="shadow-lg">
+        <Card className="shadow-lg border-border/50">
           <form onSubmit={handleSubmit}>
             <CardHeader>
               <CardTitle>Post Details</CardTitle>
@@ -120,9 +127,39 @@ const CreatePost = () => {
             </CardHeader>
             
             <CardContent className="space-y-6">
+              {/* Image Upload */}
+              <div className="space-y-2">
+                <Label>Cover Image</Label>
+                {imagePreview ? (
+                  <div className="relative rounded-lg overflow-hidden border border-border bg-muted">
+                    <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover" />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                      onClick={removeImage}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 hover:bg-muted/50 transition-colors">
+                    <ImagePlus className="h-8 w-8 text-muted-foreground mb-2" />
+                    <span className="text-sm text-muted-foreground">Click to upload a cover image</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="title">
-                  Title <span className="text-red-500">*</span>
+                  Title <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="title"
@@ -130,13 +167,12 @@ const CreatePost = () => {
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Enter a catchy title"
                   required
-                  className="ring-focus"
                 />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="content">
-                  Content <span className="text-red-500">*</span>
+                  Content <span className="text-destructive">*</span>
                 </Label>
                 <Textarea
                   id="content"
@@ -144,7 +180,7 @@ const CreatePost = () => {
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="Write your blog post content here..."
                   required
-                  className="min-h-[200px] ring-focus"
+                  className="min-h-[200px]"
                 />
               </div>
               
@@ -152,26 +188,11 @@ const CreatePost = () => {
                 <Label htmlFor="status">Status</Label>
                 <div className="flex space-x-4">
                   <label className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="status"
-                      value="draft"
-                      checked={status === 'draft'}
-                      onChange={() => setStatus('draft')}
-                      className="ring-focus"
-                    />
+                    <input type="radio" name="status" value="draft" checked={status === 'draft'} onChange={() => setStatus('draft')} />
                     <span>Draft</span>
                   </label>
-                  
                   <label className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="status"
-                      value="published"
-                      checked={status === 'published'}
-                      onChange={() => setStatus('published')}
-                      className="ring-focus"
-                    />
+                    <input type="radio" name="status" value="published" checked={status === 'published'} onChange={() => setStatus('published')} />
                     <span>Published</span>
                   </label>
                 </div>
@@ -186,10 +207,7 @@ const CreatePost = () => {
                 ) : categories.length > 0 ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {categories.map((category) => (
-                      <label 
-                        key={category.id} 
-                        className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
-                      >
+                      <label key={category.id} className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted/50 cursor-pointer">
                         <Checkbox
                           id={`category-${category.id}`}
                           checked={selectedCategoryIds.includes(category.id)}
@@ -206,19 +224,10 @@ const CreatePost = () => {
             </CardContent>
             
             <CardFooter className="flex justify-between">
-              <Button 
-                type="button" 
-                variant="outline"
-                onClick={() => navigate('/profile')}
-              >
+              <Button type="button" variant="outline" onClick={() => navigate('/profile')}>
                 Cancel
               </Button>
-              
-              <Button 
-                type="submit" 
-                disabled={isLoading}
-                className="glass-button"
-              >
+              <Button type="submit" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

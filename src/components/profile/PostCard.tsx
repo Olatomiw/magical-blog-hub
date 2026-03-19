@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { MessageCircle, Clock, Trash2 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { formatDate, truncateText } from '@/lib/api';
 import { Post } from '@/lib/types';
 
@@ -14,8 +13,15 @@ interface PostCardProps {
 }
 
 const PostCard = ({ post, onDeleteClick, isDeleting }: PostCardProps) => {
+  const imageUrl = post.imageUrl;
+
   return (
-    <Card className="h-full flex flex-col hover:shadow-md transition-shadow duration-200 relative">
+    <Card className="h-full flex flex-col hover:shadow-md transition-shadow duration-200 relative overflow-hidden border-border/50">
+      {imageUrl && (
+        <div className="aspect-[16/9] overflow-hidden bg-muted">
+          <img src={imageUrl} alt={post.title} className="w-full h-full object-cover" />
+        </div>
+      )}
       <CardHeader className="pb-2">
         <CardTitle className="text-xl mb-1 line-clamp-2">
           <Link to={`/blog/${post.id}`} className="hover:text-primary transition-colors">
@@ -40,24 +46,14 @@ const PostCard = ({ post, onDeleteClick, isDeleting }: PostCardProps) => {
           {post.comments.length} comment{post.comments.length !== 1 ? 's' : ''}
         </span>
         <div className="flex items-center space-x-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            asChild
-            className="text-xs"
-          >
-            <Link to={`/blog/${post.id}`}>
-              Read More
-            </Link>
+          <Button variant="ghost" size="sm" asChild className="text-xs">
+            <Link to={`/blog/${post.id}`}>Read More</Link>
           </Button>
           <Button
             variant="ghost"
             size="sm"
             className="text-xs p-1 h-auto hover:bg-destructive/10 hover:text-destructive"
-            onClick={(e) => {
-              e.preventDefault();
-              onDeleteClick(post.id);
-            }}
+            onClick={(e) => { e.preventDefault(); onDeleteClick(post.id); }}
             disabled={isDeleting === post.id}
           >
             {isDeleting === post.id ? (
