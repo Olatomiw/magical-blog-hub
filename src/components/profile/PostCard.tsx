@@ -1,10 +1,11 @@
-
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { MessageCircle, Clock, Trash2 } from 'lucide-react';
+import { Clock, Trash2 } from 'lucide-react';
 import { formatDate, truncateText } from '@/lib/api';
+import { estimateReadingTime } from '@/lib/utils';
 import { Post } from '@/lib/types';
+import { Badge } from '@/components/ui/badge';
 
 interface PostCardProps {
   post: Post;
@@ -14,40 +15,35 @@ interface PostCardProps {
 
 const PostCard = ({ post, onDeleteClick, isDeleting }: PostCardProps) => {
   const imageUrl = post.imageUrl;
+  const readTime = estimateReadingTime(post.content);
 
   return (
-    <Card className="h-full flex flex-col hover:shadow-md transition-shadow duration-200 relative overflow-hidden border-border/50">
+    <Card className="h-full flex flex-col rounded-2xl overflow-hidden border-border/50 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
       {imageUrl && (
-        <div className="aspect-[16/9] overflow-hidden bg-muted">
+        <div className="relative aspect-[16/9] overflow-hidden bg-muted">
           <img src={imageUrl} alt={post.title} className="w-full h-full object-cover" />
+          {post.categories?.length > 0 && (
+            <Badge className="absolute bottom-2 left-2 bg-foreground/80 text-background text-xs border-0 backdrop-blur-sm">
+              {post.categories[0].name}
+            </Badge>
+          )}
         </div>
       )}
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xl mb-1 line-clamp-2">
-          <Link to={`/blog/${post.id}`} className="hover:text-primary transition-colors">
-            {post.title}
-          </Link>
-        </CardTitle>
-        <CardDescription className="flex items-center text-xs">
-          <Clock className="h-3 w-3 mr-1" /> 
-          {formatDate(post.createdAt)}
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent className="pb-4 flex-grow">
-        <p className="text-sm text-muted-foreground">
+      <div className="p-5 flex flex-col flex-grow">
+        <h3 className="text-lg font-bold mb-1 line-clamp-2">
+          <Link to={`/blog/${post.id}`} className="hover:text-primary transition-colors">{post.title}</Link>
+        </h3>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+          <span>{formatDate(post.createdAt)}</span>
+          <span>·</span>
+          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{readTime} min</span>
+        </div>
+        <p className="text-sm text-muted-foreground line-clamp-2 flex-grow mb-4">
           {truncateText(post.content, 120)}
         </p>
-      </CardContent>
-      
-      <CardFooter className="pt-0 flex justify-between items-center">
-        <span className="flex items-center text-xs text-muted-foreground">
-          <MessageCircle className="h-3 w-3 mr-1" />
-          {post.comments.length} comment{post.comments.length !== 1 ? 's' : ''}
-        </span>
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm" asChild className="text-xs">
-            <Link to={`/blog/${post.id}`}>Read More</Link>
+        <div className="flex justify-between items-center pt-3 border-t border-border/50">
+          <Button variant="ghost" size="sm" asChild className="text-xs text-primary hover:text-primary/80 p-0 h-auto">
+            <Link to={`/blog/${post.id}`}>Read More →</Link>
           </Button>
           <Button
             variant="ghost"
@@ -63,7 +59,7 @@ const PostCard = ({ post, onDeleteClick, isDeleting }: PostCardProps) => {
             )}
           </Button>
         </div>
-      </CardFooter>
+      </div>
     </Card>
   );
 };

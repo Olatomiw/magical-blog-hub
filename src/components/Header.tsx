@@ -1,9 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import AuthModal from '@/components/AuthModal';
-import { motion } from 'framer-motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -13,124 +11,94 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut } from 'lucide-react';
+import { User, LogOut, PenLine } from 'lucide-react';
 
 const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const navigate = useNavigate();
-  
-  // Add this effect to redirect to profile page after login/signup
+
   useEffect(() => {
     if (isAuthenticated && authModalOpen) {
       setAuthModalOpen(false);
-      // Wait a moment before navigating to ensure state is updated
       setTimeout(() => navigate('/profile'), 100);
     }
   }, [isAuthenticated, authModalOpen, navigate]);
-  
-  const openLoginModal = () => {
-    setAuthMode('login');
-    setAuthModalOpen(true);
-  };
-  
-  const openSignupModal = () => {
-    setAuthMode('signup');
-    setAuthModalOpen(true);
-  };
-  
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
-  
+
+  const openLoginModal = () => { setAuthMode('login'); setAuthModalOpen(true); };
+  const openSignupModal = () => { setAuthMode('signup'); setAuthModalOpen(true); };
+  const handleLogout = () => { logout(); navigate('/'); };
+
   return (
-    <motion.header 
-      className="fixed top-0 left-0 right-0 z-50 py-4 glass-panel"
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-    >
-      <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
-        <motion.div 
-          className="flex items-center space-x-2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.3 }}
-        >
-          <Link to="/" className="font-bold text-xl tracking-tight">Minimal Blog</Link>
-        </motion.div>
-        
-        <motion.nav 
-          className="flex items-center space-x-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.3 }}
-        >
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
+      <div className="container mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+        <Link to="/" className="font-extrabold text-xl tracking-tight text-foreground">
+          Minimal Blog
+        </Link>
+
+        <nav className="flex items-center gap-3">
           {isAuthenticated ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-9 w-9 rounded-full" size="icon">
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={user?.profilePicture || user?.image} alt={user?.username || "User"} />
-                    <AvatarFallback>
-                      {user?.firstName?.charAt(0) || user?.username?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <div className="flex items-center justify-start gap-2 p-2">
-                  <div className="flex flex-col space-y-0.5 leading-none">
-                    <p className="font-medium text-sm">{user?.firstName} {user?.lastName}</p>
-                    <p className="text-xs text-muted-foreground">@{user?.username}</p>
-                  </div>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/profile" className="cursor-pointer flex w-full items-center">
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <div className="flex items-center space-x-2">
+            <>
               <Button
-                variant="ghost"
                 size="sm"
-                onClick={openLoginModal}
-                className="ring-focus"
+                onClick={() => navigate('/create-post')}
+                className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 px-4"
               >
+                <PenLine className="h-3.5 w-3.5" />
+                Write
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src={user?.profilePicture || user?.image} alt={user?.username || "User"} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                        {user?.firstName?.charAt(0) || user?.username?.charAt(0) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 rounded-xl">
+                  <div className="flex items-center gap-2 p-3">
+                    <div className="flex flex-col">
+                      <p className="font-semibold text-sm">{user?.firstName} {user?.lastName}</p>
+                      <p className="text-xs text-muted-foreground">@{user?.username}</p>
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="cursor-pointer flex w-full items-center">
+                      <User className="mr-2 h-4 w-4" /> Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" /> Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={openLoginModal} className="text-muted-foreground hover:text-foreground">
                 Log In
               </Button>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={openSignupModal}
-                className="glass-button"
-              >
+              <Button size="sm" onClick={openSignupModal} className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 px-5">
                 Sign Up
               </Button>
             </div>
           )}
-        </motion.nav>
+        </nav>
       </div>
-      
-      <AuthModal 
-        isOpen={authModalOpen} 
+
+      <AuthModal
+        isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
         initialMode={authMode}
         setMode={setAuthMode}
       />
-    </motion.header>
+    </header>
   );
 };
 
