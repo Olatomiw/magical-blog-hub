@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
@@ -21,28 +20,18 @@ const SummarizeButton: React.FC<SummarizeButtonProps> = ({ postId }) => {
 
   const handleSummarize = async () => {
     if (!isAuthenticated) {
-      toast({
-        title: "Authentication Required",
-        description: "You must be logged in to use AI summarization.",
-        variant: "destructive",
-      });
+      toast({ title: "Authentication Required", description: "You must be logged in to use AI summarization.", variant: "destructive" });
       navigate("/login");
       return;
     }
-
     setIsSummarizing(true);
     setShowSummary(true);
     setSummary("");
-
     try {
       const result = await summarizePost(postId);
       setSummary(result.summary);
     } catch (error: any) {
-      toast({
-        title: "Error Summarizing Post",
-        description: error.message || "Failed to summarize post.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message || "Failed to summarize post.", variant: "destructive" });
       setShowSummary(false);
     } finally {
       setIsSummarizing(false);
@@ -51,22 +40,15 @@ const SummarizeButton: React.FC<SummarizeButtonProps> = ({ postId }) => {
 
   return (
     <>
-      <Button 
+      <Button
         onClick={handleSummarize}
-        variant="outline"
         size="sm"
-        className="gap-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50 transition-all"
+        className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 px-4"
       >
-        <Sparkles className="h-4 w-4 text-yellow-500" />
+        <Sparkles className="h-3.5 w-3.5" />
         Summarize
       </Button>
-
-      <SummaryDialog 
-        isOpen={showSummary}
-        onClose={() => setShowSummary(false)}
-        summary={summary}
-        isLoading={isSummarizing}
-      />
+      <SummaryDialog isOpen={showSummary} onClose={() => setShowSummary(false)} summary={summary} isLoading={isSummarizing} />
     </>
   );
 };

@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { deletePost } from '@/lib/api';
 import { toast } from '@/components/ui/use-toast';
@@ -21,94 +20,50 @@ const Profile = () => {
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const location = useLocation();
-  
-  // Update local posts state when user data changes
-  useEffect(() => {
-    if (user?.postResponseList) {
-      setUserPosts(user.postResponseList);
-    }
-  }, [user]);
-  
-  // Check authentication status and redirect if needed
-  useEffect(() => {
-    // Only redirect if we've determined the user is not authenticated
-    // This prevents unnecessary redirects on initial load
-    if (isAuthenticated === false) {
-      navigate('/', { replace: true });
-    }
-  }, [isAuthenticated, navigate]);
-  
-  // If still determining auth status, show nothing to prevent flash
-  if (isAuthenticated === undefined) {
-    return null;
-  }
-  
-  const handleDeleteClick = (postId: string) => {
-    setPostToDelete(postId);
-    setShowDeleteDialog(true);
-  };
-  
+
+  useEffect(() => { if (user?.postResponseList) setUserPosts(user.postResponseList); }, [user]);
+  useEffect(() => { if (isAuthenticated === false) navigate('/', { replace: true }); }, [isAuthenticated, navigate]);
+
+  if (isAuthenticated === undefined) return null;
+
+  const handleDeleteClick = (postId: string) => { setPostToDelete(postId); setShowDeleteDialog(true); };
+
   const handleDeleteConfirm = async () => {
     if (!postToDelete) return;
-    
     try {
       setIsDeleting(postToDelete);
       await deletePost(postToDelete);
-      
-      // Update local state immediately to remove the deleted post
-      setUserPosts(prevPosts => prevPosts.filter(post => post.id !== postToDelete));
-      
-      // Invalidate the query to refresh user data from backend
+      setUserPosts(prev => prev.filter(p => p.id !== postToDelete));
       queryClient.invalidateQueries({ queryKey: ['user'] });
-      
-      toast({
-        title: "Post deleted",
-        description: "Your post has been successfully deleted.",
-      });
+      toast({ title: "Deleted", description: "Post has been removed." });
     } catch (error) {
-      console.error('Failed to delete post:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to delete post. Please try again.",
-      });
+      toast({ variant: "destructive", title: "Error", description: "Failed to delete post." });
     } finally {
       setIsDeleting(null);
       setShowDeleteDialog(false);
       setPostToDelete(null);
     }
   };
-  
-  const handleDeleteCancel = () => {
-    setShowDeleteDialog(false);
-    setPostToDelete(null);
-  };
-  
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      
-      <motion.div 
-        className="container max-w-6xl pt-32 pb-16 px-4 md:px-6 flex-grow"
+
+      <motion.div
+        className="container max-w-5xl pt-24 pb-16 px-4 md:px-6 flex-grow"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.4 }}
       >
         <UserProfileHeader />
-        <PostsList 
-          posts={userPosts} 
-          onDeleteClick={handleDeleteClick} 
-          isDeleting={isDeleting}
-        />
+        <PostsList posts={userPosts} onDeleteClick={handleDeleteClick} isDeleting={isDeleting} />
       </motion.div>
-      
+
       <Footer />
-      
-      <DeleteConfirmationDialog 
+      <DeleteConfirmationDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
-        onCancel={handleDeleteCancel}
+        onCancel={() => { setShowDeleteDialog(false); setPostToDelete(null); }}
         onConfirm={handleDeleteConfirm}
       />
     </div>

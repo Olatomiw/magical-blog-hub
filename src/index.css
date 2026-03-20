@@ -1,68 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
     
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 222 47% 11%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover-foreground: 222 47% 11%;
     
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 239 84% 67%;
+    --primary-foreground: 0 0% 100%;
     
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
     
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
     
-    --accent: 262 83% 58%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 239 84% 67%;
+    --accent-foreground: 0 0% 100%;
     
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 262 83% 58%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 239 84% 67%;
 
     --radius: 0.75rem;
+
+    --navy: 228 78% 8%;
+    --navy-foreground: 0 0% 100%;
   }
  
   .dark {
-    --background: 240 10% 3.9%;
+    --background: 228 78% 8%;
     --foreground: 0 0% 98%;
     
-    --card: 240 10% 3.9%;
+    --card: 228 60% 12%;
     --card-foreground: 0 0% 98%;
     
-    --popover: 240 10% 3.9%;
+    --popover: 228 60% 12%;
     --popover-foreground: 0 0% 98%;
     
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 239 84% 67%;
+    --primary-foreground: 0 0% 100%;
     
-    --secondary: 240 3.7% 15.9%;
+    --secondary: 228 50% 16%;
     --secondary-foreground: 0 0% 98%;
     
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 228 50% 16%;
+    --muted-foreground: 215 20% 65%;
     
-    --accent: 262 83% 58%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 239 84% 67%;
+    --accent-foreground: 0 0% 100%;
     
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
     
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 262 83% 58%;
+    --border: 228 40% 18%;
+    --input: 228 40% 18%;
+    --ring: 239 84% 67%;
   }
 }
 
@@ -72,81 +77,30 @@
   }
   
   body {
-    @apply bg-background text-foreground selection:bg-primary/20;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
-  
-  .glass-panel {
-    @apply bg-white/80 backdrop-blur-md dark:bg-gray-900/80 border border-gray-200/70 dark:border-gray-700/50 shadow-lg;
-  }
-  
-  .glass-button {
-    @apply bg-white/90 hover:bg-white/100 backdrop-blur-sm border border-gray-200/80 hover:border-gray-300/80 
-           dark:bg-gray-900/80 dark:hover:bg-gray-800/90 dark:border-gray-700/60 dark:hover:border-gray-600/60
-           transition-all duration-200 ease-out transform hover:scale-[1.03] active:scale-[0.97] shadow-md hover:shadow-lg;
+    @apply bg-background text-foreground;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Enhanced box shadows */
-  .card, .form-container, .input-container {
-    @apply shadow-lg hover:shadow-xl transition-shadow duration-300;
-  }
-
-  /* Focus styles */
-  .ring-focus {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary/70;
-  }
-  
-  /* Animated underline hover effect */
-  .hover-underline {
-    @apply relative;
-  }
-  
-  .hover-underline::after {
-    @apply content-[''] absolute bottom-0 left-0 h-[2px] w-0 bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300;
-  }
-  
-  .hover-underline:hover::after {
-    @apply w-full;
-  }
-  
-  /* Main content transitions */
-  .page-transition-enter {
-    @apply opacity-0;
-  }
-  
-  .page-transition-enter-active {
-    @apply opacity-100 transition-opacity duration-300;
-  }
-  
-  .page-transition-exit {
-    @apply opacity-100;
-  }
-  
-  .page-transition-exit-active {
-    @apply opacity-0 transition-opacity duration-300;
-  }
-
-  /* Import font family for blog content */
-  @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap');
-  
-  /* Apply font family to serif elements */
   .font-serif {
-    font-family: 'Merriweather', Georgia, serif;
+    font-family: 'Lora', Georgia, serif;
+  }
+
+  .font-sans {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   }
 }
 
-/* Additional styles for image loading blur effect */
-.image-loading {
-  @apply blur-[8px] scale-[1.02] transition-all duration-700 ease-in-out;
-}
-
-.image-loaded {
-  @apply blur-0 scale-100;
+/* Reading progress bar */
+.reading-progress {
+  @apply fixed top-0 left-0 h-[3px] z-[60] transition-all duration-150;
+  background: hsl(var(--primary));
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -154,64 +108,10 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gradient-to-b from-indigo-400/50 to-purple-400/50 rounded-full;
+  @apply rounded-full;
+  background: hsl(var(--muted-foreground) / 0.3);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gradient-to-b from-indigo-500/60 to-purple-500/60;
-}
-
-/* New colorful elements */
-.shadow-elegant {
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
-}
-
-.shadow-elegant-hover {
-  box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.15);
-}
-
-/* Animated gradient background */
-.animated-gradient {
-  background-size: 200% 200%;
-  animation: gradientAnimation 15s ease infinite;
-}
-
-@keyframes gradientAnimation {
-  0% {
-    background-position: 0% 0%;
-  }
-  50% {
-    background-position: 100% 100%;
-  }
-  100% {
-    background-position: 0% 0%;
-  }
-}
-
-/* Shimmer effect */
-.shimmer {
-  position: relative;
-  overflow: hidden;
-}
-
-.shimmer::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
-  animation: shimmerEffect 2s infinite;
-}
-
-@keyframes shimmerEffect {
-  100% {
-    left: 150%;
-  }
+  background: hsl(var(--muted-foreground) / 0.5);
 }
