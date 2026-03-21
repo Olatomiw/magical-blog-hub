@@ -48,7 +48,7 @@ export async function getAllPosts(): Promise<PostsResponse> {
   return fetchWithErrorHandling<PostsResponse>(`${API_BASE_URL}/post/getAllPost`);
 }
 
-export async function createPost(title: string, content: string, status: string, categoryIds: number[], image?: File): Promise<any> {
+export async function createPost(title: string, content: string, status: string, categoryIds: (number | string)[], image?: File): Promise<any> {
   const token = localStorage.getItem('token');
   
   if (!token) {
