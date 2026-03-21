@@ -14,8 +14,21 @@ export interface Comment {
 }
 
 export interface Category {
-  id: number;
+  id: number | string;
   name: string;
+}
+
+export interface UserPreferences {
+  userId: string;
+  preferredCategories: Category[];
+}
+
+export interface PaginatedPostsResponse {
+  content: Post[];
+  totalPages: number;
+  totalElements: number;
+  number: number;
+  size: number;
 }
 
 export interface Post {
