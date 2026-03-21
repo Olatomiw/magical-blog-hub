@@ -127,6 +127,46 @@ export async function getAllCategories(): Promise<Category[]> {
   return fetchWithErrorHandling<Category[]>(`${API_BASE_URL}/category/categories`);
 }
 
+export async function getAllCategoriesV1(): Promise<Category[]> {
+  return fetchWithErrorHandling<Category[]>(`${API_BASE_URL}/v1/categories`);
+}
+
+// Preferences API
+export async function getUserPreferences(): Promise<UserPreferences> {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('Authentication required');
+  
+  return fetchWithErrorHandling<UserPreferences>(`${API_BASE_URL}/v1/users/preferences`, {
+    method: 'GET',
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+}
+
+export async function saveUserPreferences(categoryIds: string[]): Promise<UserPreferences> {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('Authentication required');
+  
+  return fetchWithErrorHandling<UserPreferences>(`${API_BASE_URL}/v1/users/preferences`, {
+    method: 'PUT',
+    headers: { 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify({ categoryIds }),
+  });
+}
+
+// Personalized Feed API
+export async function getPersonalizedFeed(start: number = 1, limit: number = 10): Promise<PaginatedPostsResponse> {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('Authentication required');
+  
+  return fetchWithErrorHandling<PaginatedPostsResponse>(
+    `${API_BASE_URL}/v1/posts/personalized-feed?start=${start}&limit=${limit}`,
+    {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` },
+    }
+  );
+}
+
 // Comments API
 export async function createComment(postId: string, text: string): Promise<any> {
   const token = localStorage.getItem('token');

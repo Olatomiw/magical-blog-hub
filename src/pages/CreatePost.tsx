@@ -56,7 +56,7 @@ const CreatePost = () => {
 
   const removeImage = () => { setImageFile(null); setImagePreview(null); };
 
-  const handleCategoryToggle = (categoryId: number) => {
+  const handleCategoryToggle = (categoryId: number | string) => {
     setSelectedCategoryIds(prev =>
       prev.includes(categoryId) ? prev.filter(id => id !== categoryId) : [...prev, categoryId]
     );
