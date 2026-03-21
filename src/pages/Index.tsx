@@ -1,7 +1,9 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BlogCard from "@/components/BlogCard";
-import { getAllPosts } from "@/lib/api";
+import FeatureStrip from "@/components/FeatureStrip";
+import FeedTabs from "@/components/FeedTabs";
+import { getAllPosts, getPersonalizedFeed } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { Post } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -9,6 +11,8 @@ import { motion } from "framer-motion";
 import { Search, Loader2, Wifi, WifiOff } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { useAuth } from "@/context/AuthContext";
+import { Link } from "react-router-dom";
 import {
   Pagination,
   PaginationContent,
@@ -19,20 +23,47 @@ import {
 } from "@/components/ui/pagination";
 
 export default function Index() {
+  const { isAuthenticated } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState<'for-you' | 'explore'>(
+    isAuthenticated ? 'for-you' : 'explore'
+  );
   const postsPerPage = 6;
 
   const wsUrl = "ws://localhost:8080/api/update";
   const { isConnected, posts: wsPostsData, lastMessage } = useWebSocket(wsUrl);
 
-  const { data, isLoading, isError } = useQuery({
+  // Explore feed
+  const { data: exploreData, isLoading: exploreLoading, isError: exploreError } = useQuery({
     queryKey: ["posts"],
     queryFn: getAllPosts,
-    enabled: !isConnected,
+    enabled: activeTab === 'explore' && !isConnected,
   });
 
-  const posts = isConnected ? wsPostsData : (data?.data || []);
+  // For You feed
+  const { data: forYouData, isLoading: forYouLoading, isError: forYouError } = useQuery({
+    queryKey: ["personalizedFeed", currentPage],
+    queryFn: () => getPersonalizedFeed(currentPage, postsPerPage + 1),
+    enabled: activeTab === 'for-you' && isAuthenticated === true,
+  });
+
+  const isForYou = activeTab === 'for-you';
+
+  // Determine posts based on active tab
+  let posts: Post[] = [];
+  let isLoading = false;
+  let isError = false;
+
+  if (isForYou) {
+    posts = forYouData?.content || [];
+    isLoading = forYouLoading;
+    isError = forYouError;
+  } else {
+    posts = isConnected ? wsPostsData : (exploreData?.data || []);
+    isLoading = !isConnected && exploreLoading;
+    isError = exploreError;
+  }
 
   const filteredPosts = posts.filter((post: Post) =>
     post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -45,14 +76,28 @@ export default function Index() {
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = remainingPosts.slice(indexOfFirstPost, indexOfLastPost);
-  const totalPages = Math.ceil(remainingPosts.length / postsPerPage);
+  const totalPages = isForYou
+    ? (forYouData?.totalPages || 1)
+    : Math.ceil(remainingPosts.length / postsPerPage);
 
   useEffect(() => { setCurrentPage(1); }, [lastMessage]);
+
+  useEffect(() => {
+    setActiveTab(isAuthenticated ? 'for-you' : 'explore');
+  }, [isAuthenticated]);
+
+  const handleTabChange = (tab: 'for-you' | 'explore') => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+  };
 
   const paginate = (pageNumber: number) => {
     setCurrentPage(pageNumber);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // For You empty state
+  const forYouEmpty = isForYou && !isLoading && !isError && filteredPosts.length === 0;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -65,13 +110,13 @@ export default function Index() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-12"
+            className="mb-8"
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground mb-3">
               Stories that <span className="text-primary">matter</span>.
             </h1>
             <p className="text-lg text-muted-foreground max-w-lg mb-1">
-              Discover insights, ideas, and perspectives from writers around the world.
+              An AI-powered reading experience. Discover, read, and understand — faster.
             </p>
 
             <div className="flex items-center gap-2 mt-2 mb-8">
@@ -93,8 +138,14 @@ export default function Index() {
             </div>
           </motion.div>
 
+          {/* Feature Strip */}
+          <FeatureStrip />
+
+          {/* Feed Tabs */}
+          <FeedTabs activeTab={activeTab} onTabChange={handleTabChange} />
+
           {/* Content */}
-          {(!isConnected && isLoading) ? (
+          {isLoading ? (
             <div className="flex justify-center py-20">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
@@ -102,9 +153,15 @@ export default function Index() {
             <div className="text-center py-20">
               <p className="text-lg text-destructive">Error loading posts. Please try again later.</p>
             </div>
+          ) : forYouEmpty ? (
+            <div className="text-center py-20">
+              <p className="text-lg text-muted-foreground mb-2">You haven't set any preferences yet.</p>
+              <Link to="/profile" className="text-primary font-medium hover:underline">
+                Go to profile settings to set your interests →
+              </Link>
+            </div>
           ) : filteredPosts.length > 0 ? (
             <>
-              {/* Featured Post */}
               {featuredPost && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -116,7 +173,6 @@ export default function Index() {
                 </motion.div>
               )}
 
-              {/* Grid */}
               {currentPosts.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0 }}
