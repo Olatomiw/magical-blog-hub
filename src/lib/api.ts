@@ -4,7 +4,9 @@ import type {
   AuthResponse, 
   LoginCredentials, 
   SignupCredentials,
-  Category
+  Category,
+  UserPreferences,
+  PaginatedPostsResponse
 } from '@/lib/types';
 
 const API_BASE_URL = 'http://localhost:8080/api';
@@ -46,7 +48,7 @@ export async function getAllPosts(): Promise<PostsResponse> {
   return fetchWithErrorHandling<PostsResponse>(`${API_BASE_URL}/post/getAllPost`);
 }
 
-export async function createPost(title: string, content: string, status: string, categoryIds: number[], image?: File): Promise<any> {
+export async function createPost(title: string, content: string, status: string, categoryIds: (number | string)[], image?: File): Promise<any> {
   const token = localStorage.getItem('token');
   
   if (!token) {
@@ -123,6 +125,46 @@ export async function summarizePost(postId: string): Promise<{ summary: string }
 // Categories API
 export async function getAllCategories(): Promise<Category[]> {
   return fetchWithErrorHandling<Category[]>(`${API_BASE_URL}/category/categories`);
+}
+
+export async function getAllCategoriesV1(): Promise<Category[]> {
+  return fetchWithErrorHandling<Category[]>(`${API_BASE_URL}/v1/categories`);
+}
+
+// Preferences API
+export async function getUserPreferences(): Promise<UserPreferences> {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('Authentication required');
+  
+  return fetchWithErrorHandling<UserPreferences>(`${API_BASE_URL}/v1/users/preferences`, {
+    method: 'GET',
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+}
+
+export async function saveUserPreferences(categoryIds: string[]): Promise<UserPreferences> {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('Authentication required');
+  
+  return fetchWithErrorHandling<UserPreferences>(`${API_BASE_URL}/v1/users/preferences`, {
+    method: 'PUT',
+    headers: { 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify({ categoryIds }),
+  });
+}
+
+// Personalized Feed API
+export async function getPersonalizedFeed(start: number = 1, limit: number = 10): Promise<PaginatedPostsResponse> {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('Authentication required');
+  
+  return fetchWithErrorHandling<PaginatedPostsResponse>(
+    `${API_BASE_URL}/v1/posts/personalized-feed?start=${start}&limit=${limit}`,
+    {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` },
+    }
+  );
 }
 
 // Comments API

@@ -22,7 +22,7 @@ const CreatePost = () => {
   const [content, setContent] = useState('');
   const [status, setStatus] = useState('published');
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<(number | string)[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -56,7 +56,7 @@ const CreatePost = () => {
 
   const removeImage = () => { setImageFile(null); setImagePreview(null); };
 
-  const handleCategoryToggle = (categoryId: number) => {
+  const handleCategoryToggle = (categoryId: number | string) => {
     setSelectedCategoryIds(prev =>
       prev.includes(categoryId) ? prev.filter(id => id !== categoryId) : [...prev, categoryId]
     );

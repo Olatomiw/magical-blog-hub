@@ -10,6 +10,7 @@ import Footer from '@/components/Footer';
 import UserProfileHeader from '@/components/profile/UserProfileHeader';
 import PostsList from '@/components/profile/PostsList';
 import DeleteConfirmationDialog from '@/components/profile/DeleteConfirmationDialog';
+import PreferencesSection from '@/components/profile/PreferencesSection';
 import { Post } from '@/lib/types';
 
 const Profile = () => {
@@ -57,6 +58,7 @@ const Profile = () => {
       >
         <UserProfileHeader />
         <PostsList posts={userPosts} onDeleteClick={handleDeleteClick} isDeleting={isDeleting} />
+        <PreferencesSection />
       </motion.div>
 
       <Footer />
