@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import AuthModal from '@/components/AuthModal';
+import PreferenceModal from '@/components/PreferenceModal';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -17,18 +18,30 @@ const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [showPreferences, setShowPreferences] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated && authModalOpen) {
       setAuthModalOpen(false);
-      setTimeout(() => navigate('/profile'), 100);
+      // Check if preferences have been selected
+      const prefsSelected = localStorage.getItem('preferences_selected');
+      if (!prefsSelected) {
+        setShowPreferences(true);
+      } else {
+        setTimeout(() => navigate('/profile'), 100);
+      }
     }
   }, [isAuthenticated, authModalOpen, navigate]);
 
   const openLoginModal = () => { setAuthMode('login'); setAuthModalOpen(true); };
   const openSignupModal = () => { setAuthMode('signup'); setAuthModalOpen(true); };
   const handleLogout = () => { logout(); navigate('/'); };
+
+  const handlePreferencesClose = () => {
+    setShowPreferences(false);
+    navigate('/');
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
@@ -97,6 +110,11 @@ const Header = () => {
         onClose={() => setAuthModalOpen(false)}
         initialMode={authMode}
         setMode={setAuthMode}
+      />
+
+      <PreferenceModal
+        isOpen={showPreferences}
+        onClose={handlePreferencesClose}
       />
     </header>
   );
