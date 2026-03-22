@@ -169,7 +169,7 @@ export async function getPersonalizedFeed(start: number = 1, limit: number = 10)
   if (!token) throw new Error('Authentication required');
   
   return fetchWithErrorHandling<PaginatedPostsResponse>(
-    `${API_BASE_URL}/v1/posts/personalized-feed?start=${start}&limit=${limit}`,
+    `${API_BASE_URL}/post/personalized-feed?start=${start}&limit=${limit}`,
     {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${token}` },

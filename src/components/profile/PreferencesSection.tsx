@@ -1,17 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Pencil, X } from 'lucide-react';
-import { getUserPreferences, saveUserPreferences, getAllCategoriesV1 } from '@/lib/api';
+import { Loader2, Pencil, X, RefreshCw } from 'lucide-react';
+import { getUserPreferences, saveUserPreferences, getAllCategories } from '@/lib/api';
 import { toast } from '@/components/ui/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Category } from '@/lib/types';
+
+type EditState = 'idle' | 'loading-categories' | 'editing' | 'error';
 
 const PreferencesSection = () => {
   const [preferredCategories, setPreferredCategories] = useState<Category[]>([]);
   const [allCategories, setAllCategories] = useState<Category[]>([]);
-  const [editing, setEditing] = useState(false);
+  const [editState, setEditState] = useState<EditState>('idle');
   const [selected, setSelected] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetch = async () => {
@@ -27,20 +31,33 @@ const PreferencesSection = () => {
     fetch();
   }, []);
 
-  const startEditing = async () => {
-    setEditing(true);
-    setSelected(preferredCategories.map(c => String(c.id)));
-    if (allCategories.length === 0) {
-      try {
-        const cats = await getAllCategoriesV1();
-        setAllCategories(cats);
-      } catch (e) {
-        console.error('Failed to fetch categories:', e);
-      }
+  const fetchCategories = useCallback(async () => {
+    setEditState('loading-categories');
+    setSaveError(null);
+    try {
+      const cats = await getAllCategories();
+      const safe = Array.isArray(cats) ? cats : [];
+      setAllCategories(safe);
+      setSelected(preferredCategories.map(c => String(c.id)));
+      setEditState('editing');
+    } catch (e) {
+      console.error('Failed to fetch categories:', e);
+      setEditState('error');
+    }
+  }, [preferredCategories]);
+
+  const startEditing = () => {
+    if (allCategories.length > 0) {
+      setSelected(preferredCategories.map(c => String(c.id)));
+      setSaveError(null);
+      setEditState('editing');
+    } else {
+      fetchCategories();
     }
   };
 
   const toggle = (id: string) => {
+    setSaveError(null);
     setSelected(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
@@ -48,16 +65,23 @@ const PreferencesSection = () => {
 
   const handleSave = async () => {
     setIsSaving(true);
+    setSaveError(null);
     try {
       const result = await saveUserPreferences(selected);
       setPreferredCategories(result.preferredCategories || []);
-      setEditing(false);
+      setEditState('idle');
       toast({ title: 'Preferences updated', description: 'Your interests have been saved.' });
     } catch (e) {
       console.error('Failed to save preferences:', e);
+      setSaveError('Failed to update preferences. Please try again.');
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const cancelEditing = () => {
+    setEditState('idle');
+    setSaveError(null);
   };
 
   if (isLoading) {
@@ -72,14 +96,15 @@ const PreferencesSection = () => {
     <div className="mt-10">
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-xl font-bold text-foreground">Your Interests</h2>
-        {!editing && (
+        {editState === 'idle' && (
           <Button variant="ghost" size="sm" onClick={startEditing} className="gap-1.5 text-muted-foreground hover:text-foreground">
             <Pencil className="h-3.5 w-3.5" /> Edit
           </Button>
         )}
       </div>
 
-      {!editing ? (
+      {/* View mode */}
+      {editState === 'idle' && (
         preferredCategories.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {preferredCategories.map((cat) => (
@@ -93,10 +118,37 @@ const PreferencesSection = () => {
           </div>
         ) : (
           <p className="text-sm text-muted-foreground italic">
-            No preferences set — add some to personalise your feed.
+            No interests selected yet. Add some to personalise your feed.
           </p>
         )
-      ) : (
+      )}
+
+      {/* Loading categories */}
+      {editState === 'loading-categories' && (
+        <div className="flex flex-wrap gap-2.5 mb-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 rounded-full w-24" />
+          ))}
+        </div>
+      )}
+
+      {/* Error loading categories */}
+      {editState === 'error' && (
+        <div className="flex flex-col items-center py-8 gap-3">
+          <p className="text-sm text-muted-foreground">Couldn't load categories. Please try again.</p>
+          <div className="flex gap-3">
+            <Button onClick={fetchCategories} variant="outline" size="sm" className="gap-2 rounded-full">
+              <RefreshCw className="h-3.5 w-3.5" /> Retry
+            </Button>
+            <Button variant="ghost" size="sm" onClick={cancelEditing} className="text-muted-foreground">
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit mode */}
+      {editState === 'editing' && (
         <div>
           <div className="flex flex-wrap gap-2.5 mb-6">
             {allCategories.map((cat) => (
@@ -113,6 +165,11 @@ const PreferencesSection = () => {
               </button>
             ))}
           </div>
+
+          {saveError && (
+            <p className="text-sm text-destructive mb-4">{saveError}</p>
+          )}
+
           <div className="flex items-center gap-3">
             <Button
               onClick={handleSave}
@@ -124,7 +181,7 @@ const PreferencesSection = () => {
             </Button>
             <Button
               variant="ghost"
-              onClick={() => setEditing(false)}
+              onClick={cancelEditing}
               className="text-muted-foreground"
             >
               <X className="h-4 w-4 mr-1" /> Cancel
