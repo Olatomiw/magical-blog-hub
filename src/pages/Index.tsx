@@ -3,10 +3,12 @@ import Footer from "@/components/Footer";
 import BlogCard from "@/components/BlogCard";
 import FeatureStrip from "@/components/FeatureStrip";
 import FeedTabs from "@/components/FeedTabs";
+import PreferenceModal from "@/components/PreferenceModal";
 import { getAllPosts, getPersonalizedFeed } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { Post } from "@/lib/types";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Search, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -26,6 +28,7 @@ export default function Index() {
   const { isAuthenticated } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [showPreferenceModal, setShowPreferenceModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'for-you' | 'explore'>(
     isAuthenticated ? 'for-you' : 'explore'
   );
@@ -157,10 +160,18 @@ export default function Index() {
             </div>
           ) : forYouEmpty ? (
             <div className="text-center py-20">
-              <p className="text-muted-foreground mb-2">Your personalised feed is empty. Try updating your preferences in your profile settings.</p>
-              <Link to="/profile" className="text-primary font-medium hover:underline">
-                Go to profile settings →
-              </Link>
+              <p className="text-muted-foreground mb-4">Your personalised feed is empty. Choose some interests to get started.</p>
+              <div className="flex items-center justify-center gap-4">
+                <Button
+                  onClick={() => setShowPreferenceModal(true)}
+                  className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 px-6"
+                >
+                  Choose Interests
+                </Button>
+                <Link to="/profile" className="text-primary font-medium hover:underline text-sm">
+                  Go to profile settings →
+                </Link>
+              </div>
             </div>
           ) : isError ? (
             <div className="text-center py-20">
@@ -235,6 +246,11 @@ export default function Index() {
       </main>
 
       <Footer />
+
+      <PreferenceModal
+        isOpen={showPreferenceModal}
+        onClose={() => setShowPreferenceModal(false)}
+      />
     </div>
   );
 }

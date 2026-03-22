@@ -71,6 +71,7 @@ const PreferencesSection = () => {
       setPreferredCategories(result.preferredCategories || []);
       setEditState('idle');
       toast({ title: 'Preferences updated', description: 'Your interests have been saved.' });
+      window.location.reload();
     } catch (e) {
       console.error('Failed to save preferences:', e);
       setSaveError('Failed to update preferences. Please try again.');
