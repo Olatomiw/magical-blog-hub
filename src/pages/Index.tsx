@@ -28,6 +28,7 @@ export default function Index() {
   const { isAuthenticated } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [showPreferenceModal, setShowPreferenceModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'for-you' | 'explore'>(
     isAuthenticated ? 'for-you' : 'explore'
   );
