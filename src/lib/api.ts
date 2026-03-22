@@ -124,11 +124,21 @@ export async function summarizePost(postId: string): Promise<{ summary: string }
 
 // Categories API
 export async function getAllCategories(): Promise<Category[]> {
-  return fetchWithErrorHandling<Category[]>(`${API_BASE_URL}/category/categories`);
+  const token = localStorage.getItem('token');
+  return fetchWithErrorHandling<Category[]>(`${API_BASE_URL}/category/categories`, {
+    headers: {
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    },
+  });
 }
 
 export async function getAllCategoriesV1(): Promise<Category[]> {
-  return fetchWithErrorHandling<Category[]>(`${API_BASE_URL}/v1/categories`);
+  const token = localStorage.getItem('token');
+  return fetchWithErrorHandling<Category[]>(`${API_BASE_URL}/category/categories`, {
+    headers: {
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    },
+  });
 }
 
 // Preferences API
