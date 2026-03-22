@@ -246,6 +246,11 @@ export default function Index() {
       </main>
 
       <Footer />
+
+      <PreferenceModal
+        isOpen={showPreferenceModal}
+        onClose={() => setShowPreferenceModal(false)}
+      />
     </div>
   );
 }
