@@ -160,10 +160,18 @@ export default function Index() {
             </div>
           ) : forYouEmpty ? (
             <div className="text-center py-20">
-              <p className="text-muted-foreground mb-2">Your personalised feed is empty. Try updating your preferences in your profile settings.</p>
-              <Link to="/profile" className="text-primary font-medium hover:underline">
-                Go to profile settings →
-              </Link>
+              <p className="text-muted-foreground mb-4">Your personalised feed is empty. Choose some interests to get started.</p>
+              <div className="flex items-center justify-center gap-4">
+                <Button
+                  onClick={() => setShowPreferenceModal(true)}
+                  className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 px-6"
+                >
+                  Choose Interests
+                </Button>
+                <Link to="/profile" className="text-primary font-medium hover:underline text-sm">
+                  Go to profile settings →
+                </Link>
+              </div>
             </div>
           ) : isError ? (
             <div className="text-center py-20">
