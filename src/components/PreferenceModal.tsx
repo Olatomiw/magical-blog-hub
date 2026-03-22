@@ -82,6 +82,7 @@ const PreferenceModal = ({ isOpen, onClose }: PreferenceModalProps) => {
       localStorage.setItem('preferences_selected', 'true');
       toast({ title: 'Preferences saved', description: 'Your feed is now personalised.' });
       onClose();
+      window.location.reload();
     } catch {
       setSaveError('Failed to save preferences. You can update them later in your profile.');
       localStorage.setItem('preferences_selected', 'true');
