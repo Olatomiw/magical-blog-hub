@@ -12,7 +12,30 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, PenLine } from 'lucide-react';
+import { User, LogOut, PenLine, Sun, Moon } from 'lucide-react';
+
+function useTheme() {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('theme') as 'light' | 'dark') || 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggle = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
+
+  return { theme, toggle };
+}
 
 const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -20,11 +43,11 @@ const Header = () => {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [showPreferences, setShowPreferences] = useState(false);
   const navigate = useNavigate();
+  const { theme, toggle: toggleTheme } = useTheme();
 
   useEffect(() => {
     if (isAuthenticated && authModalOpen) {
       setAuthModalOpen(false);
-      // Check if preferences have been selected
       const prefsSelected = localStorage.getItem('preferences_selected');
       if (!prefsSelected) {
         setShowPreferences(true);
@@ -51,6 +74,19 @@ const Header = () => {
         </Link>
 
         <nav className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="h-9 w-9 rounded-full"
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+          </Button>
+
           {isAuthenticated ? (
             <>
               <Button

@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Post } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
-import { Search, Loader2, Wifi, WifiOff } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useAuth } from "@/context/AuthContext";
@@ -41,11 +41,19 @@ export default function Index() {
     enabled: activeTab === 'explore' && !isConnected,
   });
 
-  // For You feed
+  // For You feed - suppress error toasts by catching
   const { data: forYouData, isLoading: forYouLoading, isError: forYouError } = useQuery({
     queryKey: ["personalizedFeed", currentPage],
-    queryFn: () => getPersonalizedFeed(currentPage, postsPerPage + 1),
+    queryFn: async () => {
+      try {
+        return await getPersonalizedFeed(currentPage, postsPerPage + 1);
+      } catch {
+        // Swallow error to prevent toast - we handle inline
+        return { content: [], totalPages: 0 } as any;
+      }
+    },
     enabled: activeTab === 'for-you' && isAuthenticated === true,
+    retry: false,
   });
 
   const isForYou = activeTab === 'for-you';
@@ -98,6 +106,8 @@ export default function Index() {
 
   // For You empty state
   const forYouEmpty = isForYou && !isLoading && !isError && filteredPosts.length === 0;
+  // For You error state
+  const forYouFailed = isForYou && !isLoading && isError;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -115,17 +125,9 @@ export default function Index() {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground mb-3">
               Stories that <span className="text-primary">matter</span>.
             </h1>
-            <p className="text-lg text-muted-foreground max-w-lg mb-1">
+            <p className="text-lg text-muted-foreground max-w-lg mb-8">
               An AI-powered reading experience. Discover, read, and understand — faster.
             </p>
-
-            <div className="flex items-center gap-2 mt-2 mb-8">
-              {isConnected ? (
-                <span className="flex items-center text-xs text-primary gap-1"><Wifi className="h-3 w-3" /> Live</span>
-              ) : (
-                <span className="flex items-center text-xs text-muted-foreground gap-1"><WifiOff className="h-3 w-3" /> Standard</span>
-              )}
-            </div>
 
             <div className="relative max-w-md">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -149,16 +151,20 @@ export default function Index() {
             <div className="flex justify-center py-20">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-          ) : isError ? (
+          ) : forYouFailed ? (
             <div className="text-center py-20">
-              <p className="text-lg text-destructive">Error loading posts. Please try again later.</p>
+              <p className="text-sm text-muted-foreground">Unable to load your feed right now.</p>
             </div>
           ) : forYouEmpty ? (
             <div className="text-center py-20">
-              <p className="text-lg text-muted-foreground mb-2">You haven't set any preferences yet.</p>
+              <p className="text-muted-foreground mb-2">Your personalised feed is empty. Try updating your preferences in your profile settings.</p>
               <Link to="/profile" className="text-primary font-medium hover:underline">
-                Go to profile settings to set your interests →
+                Go to profile settings →
               </Link>
+            </div>
+          ) : isError ? (
+            <div className="text-center py-20">
+              <p className="text-lg text-destructive">Error loading posts. Please try again later.</p>
             </div>
           ) : filteredPosts.length > 0 ? (
             <>

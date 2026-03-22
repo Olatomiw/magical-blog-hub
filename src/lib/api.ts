@@ -124,11 +124,21 @@ export async function summarizePost(postId: string): Promise<{ summary: string }
 
 // Categories API
 export async function getAllCategories(): Promise<Category[]> {
-  return fetchWithErrorHandling<Category[]>(`${API_BASE_URL}/category/categories`);
+  const token = localStorage.getItem('token');
+  return fetchWithErrorHandling<Category[]>(`${API_BASE_URL}/category/categories`, {
+    headers: {
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    },
+  });
 }
 
 export async function getAllCategoriesV1(): Promise<Category[]> {
-  return fetchWithErrorHandling<Category[]>(`${API_BASE_URL}/v1/categories`);
+  const token = localStorage.getItem('token');
+  return fetchWithErrorHandling<Category[]>(`${API_BASE_URL}/category/categories`, {
+    headers: {
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    },
+  });
 }
 
 // Preferences API
@@ -159,7 +169,7 @@ export async function getPersonalizedFeed(start: number = 1, limit: number = 10)
   if (!token) throw new Error('Authentication required');
   
   return fetchWithErrorHandling<PaginatedPostsResponse>(
-    `${API_BASE_URL}/v1/posts/personalized-feed?start=${start}&limit=${limit}`,
+    `${API_BASE_URL}/post/personalized-feed?start=${start}&limit=${limit}`,
     {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${token}` },
