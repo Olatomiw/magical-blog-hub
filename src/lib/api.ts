@@ -146,7 +146,7 @@ export async function getUserPreferences(): Promise<UserPreferences> {
   const token = localStorage.getItem('token');
   if (!token) throw new Error('Authentication required');
   
-  return fetchWithErrorHandling<UserPreferences>(`${API_BASE_URL}/v1/users/preferences`, {
+  return fetchWithErrorHandling<UserPreferences>(API.preferences.get, {
     method: 'GET',
     headers: { 'Authorization': `Bearer ${token}` },
   });
