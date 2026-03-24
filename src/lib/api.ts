@@ -156,7 +156,7 @@ export async function saveUserPreferences(categoryIds: string[]): Promise<UserPr
   const token = localStorage.getItem('token');
   if (!token) throw new Error('Authentication required');
   
-  return fetchWithErrorHandling<UserPreferences>(`${API_BASE_URL}/v1/users/preferences`, {
+  return fetchWithErrorHandling<UserPreferences>(API.preferences.save, {
     method: 'PUT',
     headers: { 'Authorization': `Bearer ${token}` },
     body: JSON.stringify({ categoryIds }),
