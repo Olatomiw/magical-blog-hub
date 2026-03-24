@@ -197,7 +197,7 @@ export async function createComment(postId: string, text: string): Promise<any> 
 // Auth API
 export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    const response = await fetch(API.auth.login, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
