@@ -64,7 +64,7 @@ export async function createPost(title: string, content: string, status: string,
   }
   
   try {
-    const response = await fetch(`${API_BASE_URL}/post/create`, {
+    const response = await fetch(API.post.create, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
