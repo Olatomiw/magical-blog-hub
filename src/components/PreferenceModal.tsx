@@ -15,7 +15,7 @@ interface PreferenceModalProps {
 
 type ModalState = 'loading' | 'error' | 'empty' | 'loaded';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+import { API } from '@/config/api';
 
 const PreferenceModal = ({ isOpen, onClose }: PreferenceModalProps) => {
   const [categories, setCategories] = useState<Category[]>([]);

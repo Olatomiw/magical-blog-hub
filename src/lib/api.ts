@@ -9,7 +9,7 @@ import type {
   PaginatedPostsResponse
 } from '@/lib/types';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+import { API } from '@/config/api';
 
 // Reusable fetch function with error handling
 async function fetchWithErrorHandling<T>(

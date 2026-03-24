@@ -34,7 +34,7 @@ export default function Index() {
   );
   const postsPerPage = 6;
 
-  const wsUrl = "ws://localhost:8080/api/update";
+  const wsUrl = API.ws.update;
   const { isConnected, posts: wsPostsData, lastMessage } = useWebSocket(wsUrl);
 
   // Explore feed
