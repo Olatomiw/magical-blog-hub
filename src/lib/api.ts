@@ -45,7 +45,7 @@ async function fetchWithErrorHandling<T>(
 
 // Posts API
 export async function getAllPosts(): Promise<PostsResponse> {
-  return fetchWithErrorHandling<PostsResponse>(`${API_BASE_URL}/post/getAllPost`);
+  return fetchWithErrorHandling<PostsResponse>(API.post.getAll);
 }
 
 export async function createPost(title: string, content: string, status: string, categoryIds: (number | string)[], image?: File): Promise<any> {
