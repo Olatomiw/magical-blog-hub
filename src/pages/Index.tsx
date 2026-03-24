@@ -13,6 +13,7 @@ import { motion } from "framer-motion";
 import { Search, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { API } from "@/config/api";
 import { useAuth } from "@/context/AuthContext";
 import { Link } from "react-router-dom";
 import {
@@ -34,7 +35,7 @@ export default function Index() {
   );
   const postsPerPage = 6;
 
-  const wsUrl = "ws://localhost:8080/api/update";
+  const wsUrl = API.ws.update;
   const { isConnected, posts: wsPostsData, lastMessage } = useWebSocket(wsUrl);
 
   // Explore feed

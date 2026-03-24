@@ -15,7 +15,7 @@ interface PreferenceModalProps {
 
 type ModalState = 'loading' | 'error' | 'empty' | 'loaded';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+import { API } from '@/config/api';
 
 const PreferenceModal = ({ isOpen, onClose }: PreferenceModalProps) => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -29,7 +29,7 @@ const PreferenceModal = ({ isOpen, onClose }: PreferenceModalProps) => {
     setSaveError(null);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/category/categories`, {
+      const response = await fetch(API.category.getAll, {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),

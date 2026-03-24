@@ -9,7 +9,7 @@ import type {
   PaginatedPostsResponse
 } from '@/lib/types';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+import { API } from '@/config/api';
 
 // Reusable fetch function with error handling
 async function fetchWithErrorHandling<T>(
@@ -45,7 +45,7 @@ async function fetchWithErrorHandling<T>(
 
 // Posts API
 export async function getAllPosts(): Promise<PostsResponse> {
-  return fetchWithErrorHandling<PostsResponse>(`${API_BASE_URL}/post/getAllPost`);
+  return fetchWithErrorHandling<PostsResponse>(API.post.getAll);
 }
 
 export async function createPost(title: string, content: string, status: string, categoryIds: (number | string)[], image?: File): Promise<any> {
@@ -64,7 +64,7 @@ export async function createPost(title: string, content: string, status: string,
   }
   
   try {
-    const response = await fetch(`${API_BASE_URL}/post/create`, {
+    const response = await fetch(API.post.create, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -96,7 +96,7 @@ export async function deletePost(postId: string): Promise<any> {
     throw new Error('Authentication required');
   }
   
-  return fetchWithErrorHandling<any>(`${API_BASE_URL}/post/delete/${postId}`, {
+  return fetchWithErrorHandling<any>(API.post.delete(postId), {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -112,7 +112,7 @@ export async function summarizePost(postId: string): Promise<{ summary: string }
     throw new Error('Authentication required');
   }
   
-  const response = await fetchWithErrorHandling<{ content: string }>(`${API_BASE_URL}/${postId}/ai`, {
+  const response = await fetchWithErrorHandling<{ content: string }>(API.ai.summarize(postId), {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -125,7 +125,7 @@ export async function summarizePost(postId: string): Promise<{ summary: string }
 // Categories API
 export async function getAllCategories(): Promise<Category[]> {
   const token = localStorage.getItem('token');
-  return fetchWithErrorHandling<Category[]>(`${API_BASE_URL}/category/categories`, {
+  return fetchWithErrorHandling<Category[]>(API.category.getAll, {
     headers: {
       ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     },
@@ -134,7 +134,7 @@ export async function getAllCategories(): Promise<Category[]> {
 
 export async function getAllCategoriesV1(): Promise<Category[]> {
   const token = localStorage.getItem('token');
-  return fetchWithErrorHandling<Category[]>(`${API_BASE_URL}/category/categories`, {
+  return fetchWithErrorHandling<Category[]>(API.category.getAll, {
     headers: {
       ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     },
@@ -146,7 +146,7 @@ export async function getUserPreferences(): Promise<UserPreferences> {
   const token = localStorage.getItem('token');
   if (!token) throw new Error('Authentication required');
   
-  return fetchWithErrorHandling<UserPreferences>(`${API_BASE_URL}/v1/users/preferences`, {
+  return fetchWithErrorHandling<UserPreferences>(API.preferences.get, {
     method: 'GET',
     headers: { 'Authorization': `Bearer ${token}` },
   });
@@ -156,7 +156,7 @@ export async function saveUserPreferences(categoryIds: string[]): Promise<UserPr
   const token = localStorage.getItem('token');
   if (!token) throw new Error('Authentication required');
   
-  return fetchWithErrorHandling<UserPreferences>(`${API_BASE_URL}/v1/users/preferences`, {
+  return fetchWithErrorHandling<UserPreferences>(API.preferences.save, {
     method: 'PUT',
     headers: { 'Authorization': `Bearer ${token}` },
     body: JSON.stringify({ categoryIds }),
@@ -169,7 +169,7 @@ export async function getPersonalizedFeed(start: number = 1, limit: number = 10)
   if (!token) throw new Error('Authentication required');
   
   return fetchWithErrorHandling<PaginatedPostsResponse>(
-    `${API_BASE_URL}/post/personalized-feed?start=${start}&limit=${limit}`,
+    API.post.personalizedFeed(start, limit),
     {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${token}` },
@@ -185,7 +185,7 @@ export async function createComment(postId: string, text: string): Promise<any> 
     throw new Error('Authentication required');
   }
   
-  return fetchWithErrorHandling<any>(`${API_BASE_URL}/comment/create/${postId}`, {
+  return fetchWithErrorHandling<any>(API.comment.create(postId), {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -197,7 +197,7 @@ export async function createComment(postId: string, text: string): Promise<any> 
 // Auth API
 export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    const response = await fetch(API.auth.login, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -250,7 +250,7 @@ export async function signup(credentials: SignupCredentials): Promise<any> {
   
   try {
     console.log('Sending signup request with data:', { credentials: otherCredentials });
-    const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+    const response = await fetch(API.auth.signup, {
       method: 'POST',
       body: formData,
     });
