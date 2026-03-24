@@ -134,7 +134,7 @@ export async function getAllCategories(): Promise<Category[]> {
 
 export async function getAllCategoriesV1(): Promise<Category[]> {
   const token = localStorage.getItem('token');
-  return fetchWithErrorHandling<Category[]>(`${API_BASE_URL}/category/categories`, {
+  return fetchWithErrorHandling<Category[]>(API.category.getAll, {
     headers: {
       ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     },
