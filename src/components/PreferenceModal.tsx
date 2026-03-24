@@ -29,7 +29,7 @@ const PreferenceModal = ({ isOpen, onClose }: PreferenceModalProps) => {
     setSaveError(null);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/category/categories`, {
+      const response = await fetch(API.category.getAll, {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),

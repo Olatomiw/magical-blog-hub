@@ -250,7 +250,7 @@ export async function signup(credentials: SignupCredentials): Promise<any> {
   
   try {
     console.log('Sending signup request with data:', { credentials: otherCredentials });
-    const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+    const response = await fetch(API.auth.signup, {
       method: 'POST',
       body: formData,
     });
