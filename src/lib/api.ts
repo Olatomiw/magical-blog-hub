@@ -112,7 +112,7 @@ export async function summarizePost(postId: string): Promise<{ summary: string }
     throw new Error('Authentication required');
   }
   
-  const response = await fetchWithErrorHandling<{ content: string }>(`${API_BASE_URL}/${postId}/ai`, {
+  const response = await fetchWithErrorHandling<{ content: string }>(API.ai.summarize(postId), {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
