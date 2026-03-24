@@ -96,7 +96,7 @@ export async function deletePost(postId: string): Promise<any> {
     throw new Error('Authentication required');
   }
   
-  return fetchWithErrorHandling<any>(`${API_BASE_URL}/post/delete/${postId}`, {
+  return fetchWithErrorHandling<any>(API.post.delete(postId), {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`,
