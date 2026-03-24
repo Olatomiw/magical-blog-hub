@@ -185,7 +185,7 @@ export async function createComment(postId: string, text: string): Promise<any> 
     throw new Error('Authentication required');
   }
   
-  return fetchWithErrorHandling<any>(`${API_BASE_URL}/comment/create/${postId}`, {
+  return fetchWithErrorHandling<any>(API.comment.create(postId), {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
