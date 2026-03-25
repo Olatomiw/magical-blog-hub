@@ -28,12 +28,12 @@ const SummarizeButton: React.FC<SummarizeButtonProps> = ({ postId }) => {
     setIsSummarizing(true);
     setShowSummary(true);
     setSummary("");
+    setError("");
     try {
       const result = await summarizePost(postId);
       setSummary(result.summary);
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message || "Failed to summarize post.", variant: "destructive" });
-      setShowSummary(false);
+    } catch (err: any) {
+      setError(err.message || "Failed to generate summary. Please try again.");
     } finally {
       setIsSummarizing(false);
     }
