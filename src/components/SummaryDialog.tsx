@@ -7,6 +7,7 @@ interface SummaryDialogProps {
   onClose: () => void;
   summary: string;
   isLoading: boolean;
+  error?: string;
 }
 
 const SummaryDialog = ({ isOpen, onClose, summary, isLoading }: SummaryDialogProps) => {
