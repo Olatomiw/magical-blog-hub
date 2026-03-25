@@ -16,8 +16,9 @@ import { Loader2, ImagePlus, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const CreatePost = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, updateUserState } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
