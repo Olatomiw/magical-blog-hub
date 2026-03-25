@@ -17,6 +17,7 @@ const SummarizeButton: React.FC<SummarizeButtonProps> = ({ postId }) => {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [summary, setSummary] = useState("");
+  const [error, setError] = useState("");
 
   const handleSummarize = async () => {
     if (!isAuthenticated) {
