@@ -7,9 +7,10 @@ interface SummaryDialogProps {
   onClose: () => void;
   summary: string;
   isLoading: boolean;
+  error?: string;
 }
 
-const SummaryDialog = ({ isOpen, onClose, summary, isLoading }: SummaryDialogProps) => {
+const SummaryDialog = ({ isOpen, onClose, summary, isLoading, error }: SummaryDialogProps) => {
   const formatSummary = (text: string) => {
     if (!text) return null;
     return text.split('\n\n').filter(p => p.trim()).map((paragraph, index) => {
@@ -43,14 +44,18 @@ const SummaryDialog = ({ isOpen, onClose, summary, isLoading }: SummaryDialogPro
           </DialogTitle>
           <DialogDescription className="text-sm">AI-generated summary of the article</DialogDescription>
         </DialogHeader>
-        <div className="bg-secondary/50 rounded-xl mt-4">
+        <div className="bg-secondary/50 rounded-xl mt-4 max-h-[50vh] overflow-hidden flex flex-col">
           {isLoading ? (
             <div className="flex items-center justify-center p-8">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
+          ) : error ? (
+            <div className="flex items-center justify-center p-8 text-sm text-muted-foreground">
+              {error}
+            </div>
           ) : (
-            <ScrollArea className="h-auto max-h-[50vh] p-6">
-              <div className="pr-4">{formatSummary(summary)}</div>
+            <ScrollArea className="flex-1 max-h-[50vh]">
+              <div className="p-6 pr-4">{formatSummary(summary)}</div>
             </ScrollArea>
           )}
         </div>
