@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { summarizePost } from "@/lib/api";
-import { toast } from "@/components/ui/use-toast";
+
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import SummaryDialog from "@/components/SummaryDialog";
