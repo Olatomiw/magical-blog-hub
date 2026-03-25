@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -15,8 +16,9 @@ import { Loader2, ImagePlus, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const CreatePost = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, updateUserState } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -70,8 +72,30 @@ const CreatePost = () => {
     }
     setIsLoading(true);
     try {
-      await createPost(title, content, status, selectedCategoryIds, imageFile || undefined);
+      const newPost = await createPost(title, content, status, selectedCategoryIds, imageFile || undefined);
       toast({ title: "Published!", description: "Your post is now live." });
+
+      // Silently refresh user posts and categories before navigating
+      try {
+        const [freshCategories] = await Promise.all([
+          getAllCategories(),
+          queryClient.invalidateQueries({ queryKey: ['categories'] }),
+          queryClient.invalidateQueries({ queryKey: ['posts'] }),
+        ]);
+
+        // Update user state with new post appended
+        if (user && newPost) {
+          const currentPosts = user.postResponseList || [];
+          const postData = newPost.data || newPost;
+          updateUserState({
+            ...user,
+            postResponseList: [postData, ...currentPosts],
+          });
+        }
+      } catch {
+        // Best-effort refresh — silently ignore failures
+      }
+
       navigate('/profile');
     } catch (error) {
       console.error('Error creating post:', error);
