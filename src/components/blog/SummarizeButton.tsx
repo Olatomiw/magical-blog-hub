@@ -21,7 +21,6 @@ const SummarizeButton: React.FC<SummarizeButtonProps> = ({ postId }) => {
 
   const handleSummarize = async () => {
     if (!isAuthenticated) {
-      toast({ title: "Authentication Required", description: "You must be logged in to use AI summarization.", variant: "destructive" });
       navigate("/login");
       return;
     }
