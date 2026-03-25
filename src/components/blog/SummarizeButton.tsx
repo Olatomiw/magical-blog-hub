@@ -49,7 +49,7 @@ const SummarizeButton: React.FC<SummarizeButtonProps> = ({ postId }) => {
         <Sparkles className="h-3.5 w-3.5" />
         Summarize
       </Button>
-      <SummaryDialog isOpen={showSummary} onClose={() => setShowSummary(false)} summary={summary} isLoading={isSummarizing} />
+      <SummaryDialog isOpen={showSummary} onClose={() => setShowSummary(false)} summary={summary} isLoading={isSummarizing} error={error} />
     </>
   );
 };

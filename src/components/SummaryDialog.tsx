@@ -10,7 +10,7 @@ interface SummaryDialogProps {
   error?: string;
 }
 
-const SummaryDialog = ({ isOpen, onClose, summary, isLoading }: SummaryDialogProps) => {
+const SummaryDialog = ({ isOpen, onClose, summary, isLoading, error }: SummaryDialogProps) => {
   const formatSummary = (text: string) => {
     if (!text) return null;
     return text.split('\n\n').filter(p => p.trim()).map((paragraph, index) => {
